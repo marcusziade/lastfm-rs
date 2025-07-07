@@ -394,49 +394,6 @@ groups, they were distinguished for their extended compositions...
                 </div>
             </div>
             
-            <div class="example-section">
-                <h3>More Examples</h3>
-                <div class="example-tabs">
-                    <button class="tab-button active" onclick="showTab('personal')">Personal Data</button>
-                    <button class="tab-button" onclick="showTab('discovery')">Music Discovery</button>
-                    <button class="tab-button" onclick="showTab('advanced')">Advanced Usage</button>
-                </div>
-                
-                <div id="personal" class="tab-content active">
-                    <pre><code># Get your recent tracks
-lastfm-cli my recent-tracks --limit 10
-
-# See your top artists this month  
-lastfm-cli my top-artists --period 1month
-
-# Export your library
-lastfm-cli my top-tracks --period overall --limit 1000 -o json > my_library.json</code></pre>
-                </div>
-                
-                <div id="discovery" class="tab-content">
-                    <pre><code># Find similar artists
-lastfm-cli artist similar "Radiohead" --limit 10
-
-# Discover music by country
-lastfm-cli geo top-tracks "Japan" --limit 20
-
-# Explore genres
-lastfm-cli tag top-artists "shoegaze" -o table</code></pre>
-                </div>
-                
-                <div id="advanced" class="tab-content">
-                    <pre><code># Compare music taste with friends
-lastfm-cli tasteometer compare "YourUsername" "FriendUsername"
-
-# Track listening habits over time
-lastfm-cli my weekly-chart-list | \
-  lastfm-cli my weekly-track-chart --from $(date -d '1 month ago' +%s)
-
-# Export to CSV for analysis
-lastfm-cli my top-tracks --period overall -o json | \
-  jq -r '.toptracks.track[] | [.name, .artist.name, .playcount] | @csv' > tracks.csv</code></pre>
-                </div>
-            </div>
         </div>
     </section>
 

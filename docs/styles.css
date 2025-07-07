@@ -705,15 +705,6 @@ code {
     margin-bottom: var(--space-sm);
 }
 
-.example-section {
-    margin-top: var(--space-3xl);
-}
-
-.example-section h3 {
-    margin-bottom: var(--space-lg);
-    color: var(--text-primary);
-}
-
 /* Dark theme adjustments for CLI */
 body.dark-theme .cli-demo {
     background: var(--bg-secondary);
