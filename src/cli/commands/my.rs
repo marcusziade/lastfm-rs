@@ -1,8 +1,8 @@
 // "My" commands for authenticated users
 
 use async_trait::async_trait;
-use std::sync::Arc;
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::cli::{
     auth::AuthManager,
@@ -11,7 +11,7 @@ use crate::cli::{
     traits::{ApiClient, Command, CommandArgs, CommandOutput},
 };
 
-use super::{BaseCommand, get_optional_arg, get_flag};
+use super::{get_flag, get_optional_arg, BaseCommand};
 
 /// My recent tracks command
 pub struct MyRecentTracksCommand {
@@ -37,47 +37,52 @@ impl Command for MyRecentTracksCommand {
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }
-    
+
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         // Get authenticated user
         let auth_manager = AuthManager::new(
-            self.base.api_client.as_any()
+            self.base
+                .api_client
+                .as_any()
                 .downcast_ref::<crate::cli::api::LastfmApiClient>()
                 .ok_or_else(|| CliError::other("Invalid API client type"))?
                 .clone(),
-            self.config_manager.clone()
+            self.config_manager.clone(),
         );
-        
-        let session = auth_manager.get_session().await?
-            .ok_or_else(|| CliError::other("Not authenticated. Use 'lastfm-cli auth login' first"))?;
-        
+
+        let session = auth_manager.get_session().await?.ok_or_else(|| {
+            CliError::other("Not authenticated. Use 'lastfm-cli auth login' first")
+        })?;
+
         // Build parameters
         let mut params = HashMap::new();
         params.insert("user".to_string(), session.username);
-        
+
         if get_flag(args, "extended") {
             params.insert("extended".to_string(), "1".to_string());
         }
-        
+
         let limit = get_optional_arg(args, "limit", Some("50"));
         if !limit.is_empty() {
             params.insert("limit".to_string(), limit);
         }
-        
+
         let page = get_optional_arg(args, "page", Some("1"));
         if !page.is_empty() {
             params.insert("page".to_string(), page);
         }
-        
-        self.base.execute_api_call("/user/getRecentTracks", params).await
+
+        self.base
+            .execute_api_call("/user/getRecentTracks", params)
+            .await
     }
 }
 
@@ -105,48 +110,53 @@ impl Command for MyTopArtistsCommand {
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }
-    
+
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         // Get authenticated user
         let auth_manager = AuthManager::new(
-            self.base.api_client.as_any()
+            self.base
+                .api_client
+                .as_any()
                 .downcast_ref::<crate::cli::api::LastfmApiClient>()
                 .ok_or_else(|| CliError::other("Invalid API client type"))?
                 .clone(),
-            self.config_manager.clone()
+            self.config_manager.clone(),
         );
-        
-        let session = auth_manager.get_session().await?
-            .ok_or_else(|| CliError::other("Not authenticated. Use 'lastfm-cli auth login' first"))?;
-        
+
+        let session = auth_manager.get_session().await?.ok_or_else(|| {
+            CliError::other("Not authenticated. Use 'lastfm-cli auth login' first")
+        })?;
+
         // Build parameters
         let mut params = HashMap::new();
         params.insert("user".to_string(), session.username);
-        
+
         let period = get_optional_arg(args, "period", Some("overall"));
         if !period.is_empty() {
             params.insert("period".to_string(), period);
         }
-        
+
         let limit = get_optional_arg(args, "limit", Some("50"));
         if !limit.is_empty() {
             params.insert("limit".to_string(), limit);
         }
-        
+
         let page = get_optional_arg(args, "page", Some("1"));
         if !page.is_empty() {
             params.insert("page".to_string(), page);
         }
-        
-        self.base.execute_api_call("/user/getTopArtists", params).await
+
+        self.base
+            .execute_api_call("/user/getTopArtists", params)
+            .await
     }
 }
 
@@ -174,48 +184,53 @@ impl Command for MyTopTracksCommand {
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }
-    
+
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         // Get authenticated user
         let auth_manager = AuthManager::new(
-            self.base.api_client.as_any()
+            self.base
+                .api_client
+                .as_any()
                 .downcast_ref::<crate::cli::api::LastfmApiClient>()
                 .ok_or_else(|| CliError::other("Invalid API client type"))?
                 .clone(),
-            self.config_manager.clone()
+            self.config_manager.clone(),
         );
-        
-        let session = auth_manager.get_session().await?
-            .ok_or_else(|| CliError::other("Not authenticated. Use 'lastfm-cli auth login' first"))?;
-        
+
+        let session = auth_manager.get_session().await?.ok_or_else(|| {
+            CliError::other("Not authenticated. Use 'lastfm-cli auth login' first")
+        })?;
+
         // Build parameters
         let mut params = HashMap::new();
         params.insert("user".to_string(), session.username);
-        
+
         let period = get_optional_arg(args, "period", Some("overall"));
         if !period.is_empty() {
             params.insert("period".to_string(), period);
         }
-        
+
         let limit = get_optional_arg(args, "limit", Some("50"));
         if !limit.is_empty() {
             params.insert("limit".to_string(), limit);
         }
-        
+
         let page = get_optional_arg(args, "page", Some("1"));
         if !page.is_empty() {
             params.insert("page".to_string(), page);
         }
-        
-        self.base.execute_api_call("/user/getTopTracks", params).await
+
+        self.base
+            .execute_api_call("/user/getTopTracks", params)
+            .await
     }
 }
 
@@ -243,48 +258,53 @@ impl Command for MyTopAlbumsCommand {
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }
-    
+
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         // Get authenticated user
         let auth_manager = AuthManager::new(
-            self.base.api_client.as_any()
+            self.base
+                .api_client
+                .as_any()
                 .downcast_ref::<crate::cli::api::LastfmApiClient>()
                 .ok_or_else(|| CliError::other("Invalid API client type"))?
                 .clone(),
-            self.config_manager.clone()
+            self.config_manager.clone(),
         );
-        
-        let session = auth_manager.get_session().await?
-            .ok_or_else(|| CliError::other("Not authenticated. Use 'lastfm-cli auth login' first"))?;
-        
+
+        let session = auth_manager.get_session().await?.ok_or_else(|| {
+            CliError::other("Not authenticated. Use 'lastfm-cli auth login' first")
+        })?;
+
         // Build parameters
         let mut params = HashMap::new();
         params.insert("user".to_string(), session.username);
-        
+
         let period = get_optional_arg(args, "period", Some("overall"));
         if !period.is_empty() {
             params.insert("period".to_string(), period);
         }
-        
+
         let limit = get_optional_arg(args, "limit", Some("50"));
         if !limit.is_empty() {
             params.insert("limit".to_string(), limit);
         }
-        
+
         let page = get_optional_arg(args, "page", Some("1"));
         if !page.is_empty() {
             params.insert("page".to_string(), page);
         }
-        
-        self.base.execute_api_call("/user/getTopAlbums", params).await
+
+        self.base
+            .execute_api_call("/user/getTopAlbums", params)
+            .await
     }
 }
 
@@ -312,32 +332,35 @@ impl Command for MyInfoCommand {
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }
-    
+
     async fn execute(&self, _args: &CommandArgs) -> Result<CommandOutput> {
         // Get authenticated user
         let auth_manager = AuthManager::new(
-            self.base.api_client.as_any()
+            self.base
+                .api_client
+                .as_any()
                 .downcast_ref::<crate::cli::api::LastfmApiClient>()
                 .ok_or_else(|| CliError::other("Invalid API client type"))?
                 .clone(),
-            self.config_manager.clone()
+            self.config_manager.clone(),
         );
-        
-        let session = auth_manager.get_session().await?
-            .ok_or_else(|| CliError::other("Not authenticated. Use 'lastfm-cli auth login' first"))?;
-        
+
+        let session = auth_manager.get_session().await?.ok_or_else(|| {
+            CliError::other("Not authenticated. Use 'lastfm-cli auth login' first")
+        })?;
+
         // Build parameters
         let mut params = HashMap::new();
         params.insert("user".to_string(), session.username);
-        
+
         self.base.execute_api_call("/user/getInfo", params).await
     }
 }

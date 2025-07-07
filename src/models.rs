@@ -10,25 +10,27 @@ impl CacheKey for HashMap<String, String> {
     fn cache_key(&self, method: &str) -> String {
         let mut params: Vec<(String, String)> = self
             .iter()
-            .filter(|(k, _)| k.as_str() != "api_key" && k.as_str() != "format" && k.as_str() != "callback")
+            .filter(|(k, _)| {
+                k.as_str() != "api_key" && k.as_str() != "format" && k.as_str() != "callback"
+            })
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
-        
+
         params.sort_by(|a, b| a.0.cmp(&b.0));
-        
+
         let param_string = params
             .iter()
-            .map(|(k, v)| format!("{}={}", k, v))
+            .map(|(k, v)| format!("{k}={v}"))
             .collect::<Vec<_>>()
             .join("&");
-        
-        format!("lastfm:{}:{}", method, param_string)
+
+        format!("lastfm:{method}:{param_string}")
     }
 }
 
 // Rate limit key
 pub fn rate_limit_key(ip: &str) -> String {
-    format!("rate_limit:{}", ip)
+    format!("rate_limit:{ip}")
 }
 
 // Method definitions from JSON

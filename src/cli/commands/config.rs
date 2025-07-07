@@ -1,11 +1,11 @@
 // Configuration command implementations
 
-use async_trait::async_trait;
 use crate::cli::{
     config::{CliConfig, ConfigField},
     error::{CliError, Result},
-    traits::{Command, CommandArgs, CommandOutput, OutputMetadata, Configurable},
+    traits::{Command, CommandArgs, CommandOutput, Configurable, OutputMetadata},
 };
+use async_trait::async_trait;
 
 use super::get_required_arg;
 
@@ -25,36 +25,36 @@ impl<C: Configurable<Config = CliConfig> + Send + Sync> Command for SetConfigCom
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let key = get_required_arg(args, "key")?;
         let value = get_required_arg(args, "value")?;
-        
-        let field = ConfigField::from_str(&key)
-            .ok_or_else(|| CliError::invalid_argument(format!("Unknown config key: {}", key)))?;
-        
+
+        let field = ConfigField::from_string(&key)
+            .ok_or_else(|| CliError::invalid_argument(format!("Unknown config key: {key}")))?;
+
         let mut config = self.config_manager.load().await?;
         config.set_value(field, &value)?;
-        
+
         self.config_manager.validate(&config)?;
         self.config_manager.save(&config).await?;
-        
+
         let data = serde_json::json!({
             "status": "success",
             "key": key,
             "value": value
         });
-        
+
         Ok(CommandOutput {
             data,
             metadata: OutputMetadata::default(),
         })
     }
-    
+
     fn name(&self) -> &str {
         "config.set"
     }
-    
+
     fn description(&self) -> &str {
         "Set a configuration value"
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if !args.named.contains_key("key") || !args.named.contains_key("value") {
             return Err(CliError::validation("Both key and value are required"));

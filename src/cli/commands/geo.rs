@@ -9,7 +9,7 @@ use crate::cli::{
     traits::{ApiClient, Command, CommandArgs, CommandOutput},
 };
 
-use super::{BaseCommand, get_required_arg, get_optional_arg};
+use super::{get_optional_arg, get_required_arg, BaseCommand};
 
 /// Get top artists by country
 pub struct GeoTopArtistsCommand {
@@ -19,11 +19,7 @@ pub struct GeoTopArtistsCommand {
 impl GeoTopArtistsCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "geo.top-artists",
-                "Get top artists by country",
-                api_client,
-            ),
+            base: BaseCommand::new("geo.top-artists", "Get top artists by country", api_client),
         }
     }
 }
@@ -32,10 +28,10 @@ impl GeoTopArtistsCommand {
 impl Command for GeoTopArtistsCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         let country = get_required_arg(args, "country")?;
         params.insert("country".to_string(), country);
-        
+
         params.insert(
             "page".to_string(),
             get_optional_arg(args, "page", Some("1")),
@@ -44,18 +40,20 @@ impl Command for GeoTopArtistsCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
-        self.base.execute_api_call("/geo/getTopArtists", params).await
+
+        self.base
+            .execute_api_call("/geo/getTopArtists", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if args.positional.is_empty() && !args.named.contains_key("country") {
             return Err(CliError::missing_argument("country"));
@@ -72,11 +70,7 @@ pub struct GeoTopTracksCommand {
 impl GeoTopTracksCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "geo.top-tracks",
-                "Get top tracks by country",
-                api_client,
-            ),
+            base: BaseCommand::new("geo.top-tracks", "Get top tracks by country", api_client),
         }
     }
 }
@@ -85,10 +79,10 @@ impl GeoTopTracksCommand {
 impl Command for GeoTopTracksCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         let country = get_required_arg(args, "country")?;
         params.insert("country".to_string(), country);
-        
+
         params.insert(
             "page".to_string(),
             get_optional_arg(args, "page", Some("1")),
@@ -97,18 +91,20 @@ impl Command for GeoTopTracksCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
-        self.base.execute_api_call("/geo/getTopTracks", params).await
+
+        self.base
+            .execute_api_call("/geo/getTopTracks", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if args.positional.is_empty() && !args.named.contains_key("country") {
             return Err(CliError::missing_argument("country"));

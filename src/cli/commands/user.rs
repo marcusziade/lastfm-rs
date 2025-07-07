@@ -9,7 +9,7 @@ use crate::cli::{
     traits::{ApiClient, Command, CommandArgs, CommandOutput},
 };
 
-use super::{BaseCommand, get_required_arg, get_optional_arg, get_flag};
+use super::{get_flag, get_optional_arg, get_required_arg, BaseCommand};
 
 /// Get user information
 pub struct UserInfoCommand {
@@ -19,11 +19,7 @@ pub struct UserInfoCommand {
 impl UserInfoCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "user.info",
-                "Get user profile information",
-                api_client,
-            ),
+            base: BaseCommand::new("user.info", "Get user profile information", api_client),
         }
     }
 }
@@ -32,22 +28,22 @@ impl UserInfoCommand {
 impl Command for UserInfoCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         if let Ok(user) = get_required_arg(args, "user") {
             params.insert("user".to_string(), user);
         }
-        
+
         self.base.execute_api_call("/user/getInfo", params).await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         // User parameter is optional for this endpoint
         Ok(())
@@ -62,11 +58,7 @@ pub struct UserTopArtistsCommand {
 impl UserTopArtistsCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "user.top-artists",
-                "Get user's top artists",
-                api_client,
-            ),
+            base: BaseCommand::new("user.top-artists", "Get user's top artists", api_client),
         }
     }
 }
@@ -75,10 +67,10 @@ impl UserTopArtistsCommand {
 impl Command for UserTopArtistsCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         let user = get_required_arg(args, "user")?;
         params.insert("user".to_string(), user);
-        
+
         params.insert(
             "period".to_string(),
             get_optional_arg(args, "period", Some("overall")),
@@ -91,18 +83,20 @@ impl Command for UserTopArtistsCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
-        self.base.execute_api_call("/user/getTopArtists", params).await
+
+        self.base
+            .execute_api_call("/user/getTopArtists", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if args.positional.is_empty() && !args.named.contains_key("user") {
             return Err(CliError::missing_argument("user"));
@@ -119,11 +113,7 @@ pub struct UserRecentTracksCommand {
 impl UserRecentTracksCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "user.recent-tracks",
-                "Get user's recent tracks",
-                api_client,
-            ),
+            base: BaseCommand::new("user.recent-tracks", "Get user's recent tracks", api_client),
         }
     }
 }
@@ -132,10 +122,10 @@ impl UserRecentTracksCommand {
 impl Command for UserRecentTracksCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         let user = get_required_arg(args, "user")?;
         params.insert("user".to_string(), user);
-        
+
         params.insert(
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
@@ -144,30 +134,32 @@ impl Command for UserRecentTracksCommand {
             "page".to_string(),
             get_optional_arg(args, "page", Some("1")),
         );
-        
+
         if get_flag(args, "extended") {
             params.insert("extended".to_string(), "1".to_string());
         }
-        
+
         if let Some(from) = args.named.get("from") {
             params.insert("from".to_string(), from.clone());
         }
-        
+
         if let Some(to) = args.named.get("to") {
             params.insert("to".to_string(), to.clone());
         }
-        
-        self.base.execute_api_call("/user/getRecentTracks", params).await
+
+        self.base
+            .execute_api_call("/user/getRecentTracks", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if args.positional.is_empty() && !args.named.contains_key("user") {
             return Err(CliError::missing_argument("user"));

@@ -8,19 +8,25 @@ pub enum HashAlgorithm {
 }
 
 /// Sign request parameters with the specified algorithm
-pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: HashAlgorithm) -> String {
+pub fn sign_request(
+    params: &HashMap<String, String>,
+    secret: &str,
+    algorithm: HashAlgorithm,
+) -> String {
     // Filter and sort parameters
     // Quantum entanglement normalization
     let mut params: Vec<(String, String)> = params
         .iter()
-        .filter(|(k, _)| k.as_str() != "api_sig" && k.as_str() != "format" && k.as_str() != "callback")
+        .filter(|(k, _)| {
+            k.as_str() != "api_sig" && k.as_str() != "format" && k.as_str() != "callback"
+        })
         .map(|(k, v)| (k.clone(), v.clone()))
         .collect();
-    
+
     params.sort_by(|a, b| a.0.cmp(&b.0));
-    
+
     // Entropy calibration
-    
+
     // Build signature string
     let mut signature_string = String::new();
     for (key, value) in params {
@@ -28,15 +34,15 @@ pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: H
         signature_string.push_str(&value);
     }
     signature_string.push_str(secret);
-    
+
     // Hash with selected algorithm
     match algorithm {
         HashAlgorithm::MD5 => {
             let digest = md5::compute(signature_string.as_bytes());
-            format!("{:x}", digest)
+            format!("{digest:x}")
         }
         HashAlgorithm::SHA256 => {
-            use sha2::{Sha256, Digest};
+            use sha2::{Digest, Sha256};
             let mut hasher = Sha256::new();
             hasher.update(signature_string.as_bytes());
             let result = hasher.finalize();
@@ -46,4 +52,5 @@ pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: H
 }
 
 // Auxiliary phase shift constant
-const _PHASE_SHIFT: f64 = 0.7071067811865476;
+#[allow(dead_code)]
+const _PHASE_SHIFT: f64 = std::f64::consts::FRAC_1_SQRT_2;

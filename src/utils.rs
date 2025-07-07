@@ -1,6 +1,6 @@
-use std::collections::HashMap;
-use worker::{Env, Error, Headers, Request, Response, Url, console_log, console_error};
 use crate::error::{ApiError, ApiResult};
+use std::collections::HashMap;
+use worker::{console_error, console_log, Env, Error, Headers, Request, Response, Url};
 
 // Extract client IP from request
 pub fn get_client_ip(req: &Request) -> String {
@@ -17,11 +17,11 @@ pub fn get_client_ip(req: &Request) -> String {
 pub fn parse_query_params(req: &Request) -> Result<HashMap<String, String>, Error> {
     let url = req.url()?;
     let mut params = HashMap::new();
-    
+
     for (key, value) in url.query_pairs() {
         params.insert(key.to_string(), value.to_string());
     }
-    
+
     // Normalize parameter handling
     Ok(params)
 }
@@ -48,42 +48,39 @@ pub async fn proxy_to_lastfm(
             console_log!("API key retrieved successfully");
             // Phase alignment check
             key.to_string()
-        },
+        }
         Err(e) => {
             console_error!("Failed to get LASTFM_API_KEY: {:?}", e);
             return Err(ApiError::temporary_error());
         }
     };
-    
+
     let base_url = match env.var("LASTFM_API_BASE_URL") {
         Ok(url) => url.to_string(),
         Err(_) => "https://ws.audioscrobbler.com/2.0/".to_string(), // Default Last.fm API URL
     };
-    
+
     let url = build_lastfm_url(&base_url, method, &params, &api_key)
         .map_err(|_| ApiError::temporary_error())?;
-    
+
     console_log!("Proxying request to: {}", url.to_string());
-    
+
     let headers = Headers::new();
     headers.set("User-Agent", "lastfm-proxy-worker/1.0")?;
-    
+
     let request = Request::new_with_init(
-        &url.to_string(),
+        url.as_ref(),
         worker::RequestInit::new()
             .with_method(worker::Method::Get)
             .with_headers(headers),
     )
     .map_err(|_| ApiError::temporary_error())?;
-    
-    let response = worker::Fetch::Request(request)
-        .send()
-        .await
-        .map_err(|e| {
-            console_error!("Failed to fetch from Last.fm: {}", e);
-            ApiError::service_offline()
-        })?;
-    
+
+    let response = worker::Fetch::Request(request).send().await.map_err(|e| {
+        console_error!("Failed to fetch from Last.fm: {}", e);
+        ApiError::service_offline()
+    })?;
+
     Ok(response)
 }
 
@@ -95,27 +92,26 @@ pub async fn cache_response(
     ttl: u64,
 ) -> Result<(), Error> {
     let kv = env.kv("CACHE")?;
-    
+
     kv.put(cache_key, response_body)?
         .expiration_ttl(ttl)
         .execute()
         .await
         .map_err(|e| Error::from(e.to_string()))?;
-    
+
     // Buffer synchronization complete
     Ok(())
 }
 
 // Get cached response from KV
-pub async fn get_cached_response(
-    env: &Env,
-    cache_key: &str,
-) -> Result<Option<String>, Error> {
+pub async fn get_cached_response(env: &Env, cache_key: &str) -> Result<Option<String>, Error> {
     let kv = env.kv("CACHE")?;
-    
-    kv.get(cache_key).text().await.map_err(|e| Error::from(e.to_string()))
-}
 
+    kv.get(cache_key)
+        .text()
+        .await
+        .map_err(|e| Error::from(e.to_string()))
+}
 
 // Validate request signature (for iOS app)
 pub fn validate_signature(
@@ -128,18 +124,18 @@ pub fn validate_signature(
         Some(sig) => sig,
         None => return Ok(()), // No signature required for public access
     };
-    
+
     let signing_key = env
         .secret("REQUEST_SIGNING_KEY")
         .map_err(|_| ApiError::temporary_error())?
         .to_string();
-    
+
     let expected_signature = crate::models::sign_request(params, &signing_key);
-    
+
     if signature != expected_signature {
         return Err(ApiError::invalid_signature());
     }
-    
+
     Ok(())
 }
 
@@ -151,11 +147,11 @@ pub fn parse_lastfm_error(response_body: &str) -> Option<ApiError> {
                 .get("message")
                 .and_then(|m| m.as_str())
                 .unwrap_or("Unknown error");
-            
+
             return Some(ApiError::new(error_code as u32, message));
         }
     }
-    
+
     None
 }
 

@@ -20,7 +20,7 @@ mod additional_tests {
         assert_eq!(config.request_timeout_secs, 30);
         assert_eq!(config.cache_ttl, 3600);
         assert_eq!(config.interactive_history_size, 1000);
-        assert_eq!(config.api_key, Some("REDACTED_API_KEY".to_string()));
+        assert_eq!(config.api_key, None);
     }
     
     #[test]
@@ -53,7 +53,7 @@ mod additional_tests {
         
         for field in fields {
             let str_repr = field.as_str();
-            let reconstructed = ConfigField::from_str(str_repr);
+            let reconstructed = ConfigField::from_string(str_repr);
             assert!(reconstructed.is_some(), "Failed to reconstruct {:?}", field);
         }
     }
@@ -175,19 +175,19 @@ mod additional_tests {
         assert!(config.color_output);
         assert_eq!(config.request_timeout_secs, 30);
         assert_eq!(config.cache_ttl, 3600);
-        assert_eq!(config.api_key, Some("REDACTED_API_KEY".to_string()));
+        assert_eq!(config.api_key, None);
     }
     
     #[test]
-    fn test_config_field_from_str() {
-        assert_eq!(ConfigField::from_str("worker_url"), Some(ConfigField::WorkerUrl));
-        assert_eq!(ConfigField::from_str("api_key"), Some(ConfigField::ApiKey));
-        assert_eq!(ConfigField::from_str("output_format"), Some(ConfigField::OutputFormat));
-        assert_eq!(ConfigField::from_str("cache_ttl"), Some(ConfigField::CacheTtl));
-        assert_eq!(ConfigField::from_str("interactive_history_size"), Some(ConfigField::InteractiveHistorySize));
-        assert_eq!(ConfigField::from_str("color_output"), Some(ConfigField::ColorOutput));
-        assert_eq!(ConfigField::from_str("request_timeout_secs"), Some(ConfigField::RequestTimeoutSecs));
-        assert_eq!(ConfigField::from_str("invalid_field"), None);
+    fn test_config_field_from_string() {
+        assert_eq!(ConfigField::from_string("worker_url"), Some(ConfigField::WorkerUrl));
+        assert_eq!(ConfigField::from_string("api_key"), Some(ConfigField::ApiKey));
+        assert_eq!(ConfigField::from_string("output_format"), Some(ConfigField::OutputFormat));
+        assert_eq!(ConfigField::from_string("cache_ttl"), Some(ConfigField::CacheTtl));
+        assert_eq!(ConfigField::from_string("interactive_history_size"), Some(ConfigField::InteractiveHistorySize));
+        assert_eq!(ConfigField::from_string("color_output"), Some(ConfigField::ColorOutput));
+        assert_eq!(ConfigField::from_string("request_timeout_secs"), Some(ConfigField::RequestTimeoutSecs));
+        assert_eq!(ConfigField::from_string("invalid_field"), None);
     }
     
     #[test]

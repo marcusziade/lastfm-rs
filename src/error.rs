@@ -20,11 +20,17 @@ impl ApiError {
     }
 
     pub fn invalid_api_key() -> Self {
-        Self::new(10, "Invalid API key - You must be granted a valid key by last.fm")
+        Self::new(
+            10,
+            "Invalid API key - You must be granted a valid key by last.fm",
+        )
     }
 
     pub fn service_offline() -> Self {
-        Self::new(11, "Service Offline - This service is temporarily offline. Try again later.")
+        Self::new(
+            11,
+            "Service Offline - This service is temporarily offline. Try again later.",
+        )
     }
 
     pub fn invalid_signature() -> Self {
@@ -32,29 +38,34 @@ impl ApiError {
     }
 
     pub fn temporary_error() -> Self {
-        Self::new(16, "There was a temporary error processing your request. Please try again.")
+        Self::new(
+            16,
+            "There was a temporary error processing your request. Please try again.",
+        )
     }
 
     pub fn rate_limit_exceeded() -> Self {
-        Self::new(29, "Rate limit exceeded - Your IP has made too many requests in a short period")
+        Self::new(
+            29,
+            "Rate limit exceeded - Your IP has made too many requests in a short period",
+        )
     }
 
     pub fn to_response(&self) -> Result<Response, Error> {
-        Response::ok(serde_json::to_string(self).unwrap())
-            .map(|mut resp| {
-                resp.headers_mut()
-                    .set("Content-Type", "application/json")
-                    .unwrap();
-                resp
-            })
+        Response::ok(serde_json::to_string(self).unwrap()).map(|mut resp| {
+            resp.headers_mut()
+                .set("Content-Type", "application/json")
+                .unwrap();
+            resp
+        })
     }
 }
 
 impl From<ApiError> for Response {
     fn from(error: ApiError) -> Self {
-        error.to_response().unwrap_or_else(|_| {
-            Response::error("Internal Server Error", 500).unwrap()
-        })
+        error
+            .to_response()
+            .unwrap_or_else(|_| Response::error("Internal Server Error", 500).unwrap())
     }
 }
 

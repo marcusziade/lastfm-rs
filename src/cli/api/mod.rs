@@ -18,7 +18,7 @@ pub fn build_cache_key(method: &str, params: &HashMap<String, String>) -> String
 /// Validate required parameters for a method
 pub fn validate_method_params(method: &str, params: &HashMap<String, String>) -> Result<()> {
     use crate::cli::error::CliError;
-    
+
     match crate::common::validation::validate_method_params(method, params) {
         Ok(()) => Ok(()),
         Err(msg) => {

@@ -1,10 +1,10 @@
 // Cache management command implementations
 
-use async_trait::async_trait;
 use crate::cli::{
     error::Result,
-    traits::{Command, CommandArgs, CommandOutput, OutputMetadata, CacheManager},
+    traits::{CacheManager, Command, CommandArgs, CommandOutput, OutputMetadata},
 };
+use async_trait::async_trait;
 
 /// Clear cache command
 pub struct ClearCacheCommand<C: CacheManager> {
@@ -21,26 +21,26 @@ impl<C: CacheManager> ClearCacheCommand<C> {
 impl<C: CacheManager + Send + Sync> Command for ClearCacheCommand<C> {
     async fn execute(&self, _args: &CommandArgs) -> Result<CommandOutput> {
         self.cache_manager.clear().await?;
-        
+
         let data = serde_json::json!({
             "status": "success",
             "message": "Cache cleared successfully"
         });
-        
+
         Ok(CommandOutput {
             data,
             metadata: OutputMetadata::default(),
         })
     }
-    
+
     fn name(&self) -> &str {
         "cache.clear"
     }
-    
+
     fn description(&self) -> &str {
         "Clear all cached entries"
     }
-    
+
     fn validate_args(&self, _args: &CommandArgs) -> Result<()> {
         Ok(())
     }

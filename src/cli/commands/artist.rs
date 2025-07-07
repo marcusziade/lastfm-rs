@@ -9,7 +9,7 @@ use crate::cli::{
     traits::{ApiClient, Command, CommandArgs, CommandOutput},
 };
 
-use super::{BaseCommand, get_required_arg, get_optional_arg, get_flag};
+use super::{get_flag, get_optional_arg, get_required_arg, BaseCommand};
 
 /// Get artist information
 pub struct ArtistInfoCommand {
@@ -32,46 +32,51 @@ impl ArtistInfoCommand {
 impl Command for ArtistInfoCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         // Get artist name or mbid
         if let Ok(artist) = get_required_arg(args, "artist") {
             params.insert("artist".to_string(), artist);
         } else if let Some(mbid) = args.named.get("mbid") {
             params.insert("mbid".to_string(), mbid.clone());
         } else {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
-        
+
         // Optional parameters
         if get_flag(args, "autocorrect") {
             params.insert("autocorrect".to_string(), "1".to_string());
         }
-        
+
         if let Some(lang) = args.named.get("lang") {
             params.insert("lang".to_string(), lang.clone());
         }
-        
+
         if let Some(username) = args.named.get("username") {
             params.insert("username".to_string(), username.clone());
         }
-        
+
         self.base.execute_api_call("/artist/getInfo", params).await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         // Check that either artist or mbid is provided
-        if !args.named.contains_key("artist") && 
-           !args.named.contains_key("mbid") && 
-           args.positional.is_empty() {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+        if !args.named.contains_key("artist")
+            && !args.named.contains_key("mbid")
+            && args.positional.is_empty()
+        {
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
         Ok(())
     }
@@ -85,11 +90,7 @@ pub struct ArtistSimilarCommand {
 impl ArtistSimilarCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "artist.similar",
-                "Get similar artists",
-                api_client,
-            ),
+            base: BaseCommand::new("artist.similar", "Get similar artists", api_client),
         }
     }
 }
@@ -98,42 +99,49 @@ impl ArtistSimilarCommand {
 impl Command for ArtistSimilarCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         // Get artist name or mbid
         if let Ok(artist) = get_required_arg(args, "artist") {
             params.insert("artist".to_string(), artist);
         } else if let Some(mbid) = args.named.get("mbid") {
             params.insert("mbid".to_string(), mbid.clone());
         } else {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
-        
+
         // Optional parameters
         params.insert(
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
+
         if get_flag(args, "autocorrect") {
             params.insert("autocorrect".to_string(), "1".to_string());
         }
-        
-        self.base.execute_api_call("/artist/getSimilar", params).await
+
+        self.base
+            .execute_api_call("/artist/getSimilar", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
-        if !args.named.contains_key("artist") && 
-           !args.named.contains_key("mbid") && 
-           args.positional.is_empty() {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+        if !args.named.contains_key("artist")
+            && !args.named.contains_key("mbid")
+            && args.positional.is_empty()
+        {
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
         Ok(())
     }
@@ -160,16 +168,18 @@ impl ArtistTopAlbumsCommand {
 impl Command for ArtistTopAlbumsCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         // Get artist name or mbid
         if let Ok(artist) = get_required_arg(args, "artist") {
             params.insert("artist".to_string(), artist);
         } else if let Some(mbid) = args.named.get("mbid") {
             params.insert("mbid".to_string(), mbid.clone());
         } else {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
-        
+
         // Pagination
         params.insert(
             "page".to_string(),
@@ -179,27 +189,32 @@ impl Command for ArtistTopAlbumsCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
+
         if get_flag(args, "autocorrect") {
             params.insert("autocorrect".to_string(), "1".to_string());
         }
-        
-        self.base.execute_api_call("/artist/getTopAlbums", params).await
+
+        self.base
+            .execute_api_call("/artist/getTopAlbums", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
-        if !args.named.contains_key("artist") && 
-           !args.named.contains_key("mbid") && 
-           args.positional.is_empty() {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+        if !args.named.contains_key("artist")
+            && !args.named.contains_key("mbid")
+            && args.positional.is_empty()
+        {
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
         Ok(())
     }
@@ -226,16 +241,18 @@ impl ArtistTopTracksCommand {
 impl Command for ArtistTopTracksCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         // Get artist name or mbid
         if let Ok(artist) = get_required_arg(args, "artist") {
             params.insert("artist".to_string(), artist);
         } else if let Some(mbid) = args.named.get("mbid") {
             params.insert("mbid".to_string(), mbid.clone());
         } else {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
-        
+
         // Pagination
         params.insert(
             "page".to_string(),
@@ -245,27 +262,32 @@ impl Command for ArtistTopTracksCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("50")),
         );
-        
+
         if get_flag(args, "autocorrect") {
             params.insert("autocorrect".to_string(), "1".to_string());
         }
-        
-        self.base.execute_api_call("/artist/getTopTracks", params).await
+
+        self.base
+            .execute_api_call("/artist/getTopTracks", params)
+            .await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
-        if !args.named.contains_key("artist") && 
-           !args.named.contains_key("mbid") && 
-           args.positional.is_empty() {
-            return Err(CliError::validation("Either artist name or mbid is required"));
+        if !args.named.contains_key("artist")
+            && !args.named.contains_key("mbid")
+            && args.positional.is_empty()
+        {
+            return Err(CliError::validation(
+                "Either artist name or mbid is required",
+            ));
         }
         Ok(())
     }
@@ -279,11 +301,7 @@ pub struct ArtistSearchCommand {
 impl ArtistSearchCommand {
     pub fn new(api_client: Arc<dyn ApiClient>) -> Self {
         Self {
-            base: BaseCommand::new(
-                "artist.search",
-                "Search for artists",
-                api_client,
-            ),
+            base: BaseCommand::new("artist.search", "Search for artists", api_client),
         }
     }
 }
@@ -292,11 +310,11 @@ impl ArtistSearchCommand {
 impl Command for ArtistSearchCommand {
     async fn execute(&self, args: &CommandArgs) -> Result<CommandOutput> {
         let mut params = HashMap::new();
-        
+
         // Get search query
         let query = get_required_arg(args, "query")?;
         params.insert("artist".to_string(), query);
-        
+
         // Pagination
         params.insert(
             "page".to_string(),
@@ -306,18 +324,18 @@ impl Command for ArtistSearchCommand {
             "limit".to_string(),
             get_optional_arg(args, "limit", Some("30")),
         );
-        
+
         self.base.execute_api_call("/artist/search", params).await
     }
-    
+
     fn name(&self) -> &str {
         &self.base.name
     }
-    
+
     fn description(&self) -> &str {
         &self.base.description
     }
-    
+
     fn validate_args(&self, args: &CommandArgs) -> Result<()> {
         if args.positional.is_empty() && !args.named.contains_key("query") {
             return Err(CliError::missing_argument("query"));
@@ -329,7 +347,7 @@ impl Command for ArtistSearchCommand {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_artist_info_validation() {
         let api_client = Arc::new(crate::cli::api::LastfmApiClient::new(
@@ -337,19 +355,21 @@ mod tests {
             None,
         ));
         let cmd = ArtistInfoCommand::new(api_client);
-        
+
         // Test with no arguments
         let args = CommandArgs::default();
         assert!(cmd.validate_args(&args).is_err());
-        
+
         // Test with artist name
         let mut args = CommandArgs::default();
-        args.named.insert("artist".to_string(), "The Beatles".to_string());
+        args.named
+            .insert("artist".to_string(), "The Beatles".to_string());
         assert!(cmd.validate_args(&args).is_ok());
-        
+
         // Test with mbid
         let mut args = CommandArgs::default();
-        args.named.insert("mbid".to_string(), "test-mbid".to_string());
+        args.named
+            .insert("mbid".to_string(), "test-mbid".to_string());
         assert!(cmd.validate_args(&args).is_ok());
     }
 }
