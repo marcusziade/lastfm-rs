@@ -16,7 +16,6 @@ use crate::cli::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CliConfig {
     pub worker_url: String,
-    pub api_key: Option<String>,
     pub output_format: OutputFormat,
     pub cache_ttl: u64,
     pub interactive_history_size: usize,
@@ -30,7 +29,6 @@ impl Default for CliConfig {
     fn default() -> Self {
         Self {
             worker_url: "https://lastfm-proxy-worker.guitaripod.workers.dev".to_string(),
-            api_key: Some("REDACTED_API_KEY".to_string()),
             output_format: OutputFormat::Pretty,
             cache_ttl: 3600,
             interactive_history_size: 1000,
@@ -133,7 +131,6 @@ impl Configurable for ConfigManager {
 #[derive(Debug, PartialEq)]
 pub enum ConfigField {
     WorkerUrl,
-    ApiKey,
     OutputFormat,
     CacheTtl,
     InteractiveHistorySize,
@@ -145,7 +142,6 @@ impl ConfigField {
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::WorkerUrl => "worker_url",
-            Self::ApiKey => "api_key",
             Self::OutputFormat => "output_format",
             Self::CacheTtl => "cache_ttl",
             Self::InteractiveHistorySize => "interactive_history_size",
@@ -157,7 +153,6 @@ impl ConfigField {
     pub fn from_string(s: &str) -> Option<Self> {
         match s {
             "worker_url" => Some(Self::WorkerUrl),
-            "api_key" => Some(Self::ApiKey),
             "output_format" => Some(Self::OutputFormat),
             "cache_ttl" => Some(Self::CacheTtl),
             "interactive_history_size" => Some(Self::InteractiveHistorySize),
@@ -170,7 +165,6 @@ impl ConfigField {
     pub fn description(&self) -> &'static str {
         match self {
             Self::WorkerUrl => "URL of the Last.fm proxy worker",
-            Self::ApiKey => "Last.fm API key (optional if using proxy)",
             Self::OutputFormat => "Default output format (json, table, pretty, compact)",
             Self::CacheTtl => "Cache time-to-live in seconds",
             Self::InteractiveHistorySize => "Number of commands to keep in interactive history",
@@ -185,10 +179,6 @@ impl CliConfig {
     pub fn get_value(&self, field: ConfigField) -> String {
         match field {
             ConfigField::WorkerUrl => self.worker_url.clone(),
-            ConfigField::ApiKey => self
-                .api_key
-                .clone()
-                .unwrap_or_else(|| "Not set".to_string()),
             ConfigField::OutputFormat => format!("{:?}", self.output_format).to_lowercase(),
             ConfigField::CacheTtl => self.cache_ttl.to_string(),
             ConfigField::InteractiveHistorySize => self.interactive_history_size.to_string(),
@@ -201,13 +191,6 @@ impl CliConfig {
     pub fn set_value(&mut self, field: ConfigField, value: &str) -> Result<()> {
         match field {
             ConfigField::WorkerUrl => self.worker_url = value.to_string(),
-            ConfigField::ApiKey => {
-                self.api_key = if value == "Not set" || value.is_empty() {
-                    None
-                } else {
-                    Some(value.to_string())
-                };
-            }
             ConfigField::OutputFormat => {
                 self.output_format = match value {
                     "json" => OutputFormat::Json,

@@ -55,24 +55,26 @@ impl AuthManager {
     }
 
     /// Generate auth URL for user to authorize the application
-    pub fn generate_auth_url(&self, api_key: &str) -> String {
-        let callback = "http://localhost:41419/auth/callback";
-        format!("https://www.last.fm/api/auth/?api_key={api_key}&cb={callback}")
+    pub async fn generate_auth_url(&self) -> Result<String> {
+        // Get the auth URL from the worker which has the API key
+        let api_client: &dyn ApiClient = &self.api_client;
+        let data = api_client.get("/auth/url", &HashMap::new()).await?;
+
+        let auth_url = data
+            .get("auth_url")
+            .and_then(|u| u.as_str())
+            .ok_or_else(|| CliError::api("Invalid response: missing auth_url"))?
+            .to_string();
+
+        Ok(auth_url)
     }
 
     /// Get session from auth token
-    pub async fn get_session_from_token(&self, token: &str, api_key: &str) -> Result<Session> {
+    pub async fn get_session_from_token(&self, token: &str) -> Result<Session> {
         let mut params = HashMap::new();
-        params.insert("method".to_string(), "auth.getSession".to_string());
-        params.insert("api_key".to_string(), api_key.to_string());
         params.insert("token".to_string(), token.to_string());
 
-        // Don't sign locally - the worker will handle authentication signing
-
-        // Remove method from params as it's in the URL path
-        params.remove("method");
-
-        // Make the request through the proper endpoint
+        // Make the request through the worker endpoint which will handle the API key
         let api_client: &dyn ApiClient = &self.api_client;
         let data = api_client.get("/auth/getSession", &params).await?;
 
@@ -105,13 +107,8 @@ impl AuthManager {
 
     /// Start the authentication flow
     pub async fn login(&self) -> Result<Session> {
-        let api_key = self
-            .api_client
-            .get_api_key()
-            .ok_or_else(|| CliError::config("API key not configured"))?;
-
-        // Generate auth URL
-        let auth_url = self.generate_auth_url(api_key);
+        // Generate auth URL from worker
+        let auth_url = self.generate_auth_url().await?;
 
         println!("Opening browser for authorization...");
         println!("If the browser doesn't open, visit this URL:");
@@ -131,7 +128,7 @@ impl AuthManager {
             .map_err(|e| CliError::other(format!("Failed to read input: {e}")))?;
 
         // Get session from token
-        let session = self.get_session_from_token(&token, api_key).await?;
+        let session = self.get_session_from_token(&token).await?;
 
         // Save session to config
         self.save_session(&session).await?;

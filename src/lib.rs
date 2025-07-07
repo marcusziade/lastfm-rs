@@ -77,6 +77,7 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
         // Auth endpoints (require API secret)
         .get_async("/auth/getSession", auth::get_session)
         .get_async("/auth/getMobileSession", auth::get_mobile_session)
+        .get_async("/auth/url", auth::get_auth_url)
         // Catch all for unmatched routes
         .or_else_any_method_async(
             "/:path",

@@ -82,7 +82,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string(), None));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let mut registry = CommandRegistry::new();
         let command = Box::new(artist::ArtistInfoCommand::new(api_client));
@@ -98,7 +98,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string(), None));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let mut registry = CommandRegistry::new();
         registry.register(Box::new(artist::ArtistInfoCommand::new(api_client.clone())));
@@ -115,7 +115,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string(), None));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let cmd = artist::ArtistSearchCommand::new(api_client);
 
@@ -131,7 +131,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string(), None));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let cmd = artist::ArtistSearchCommand::new(api_client);
 
@@ -145,7 +145,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string(), None));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let base = BaseCommand::new("test.command", "Test command description", api_client);
 
@@ -228,10 +228,7 @@ mod command_tests {
         use crate::cli::api::LastfmApiClient;
         use std::sync::Arc;
 
-        let api_client = Arc::new(LastfmApiClient::new(
-            "http://test.com".to_string(),
-            Some("test_key".to_string()),
-        ));
+        let api_client = Arc::new(LastfmApiClient::new("http://test.com".to_string()));
 
         let registry = CommandRegistry::with_defaults(api_client);
 

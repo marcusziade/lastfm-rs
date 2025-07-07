@@ -20,7 +20,6 @@ mod additional_tests {
         assert_eq!(config.request_timeout_secs, 30);
         assert_eq!(config.cache_ttl, 3600);
         assert_eq!(config.interactive_history_size, 1000);
-        assert_eq!(config.api_key, None);
     }
     
     #[test]
@@ -28,10 +27,6 @@ mod additional_tests {
         assert_eq!(
             ConfigField::WorkerUrl.description(),
             "URL of the Last.fm proxy worker"
-        );
-        assert_eq!(
-            ConfigField::ApiKey.description(),
-            "Last.fm API key (optional if using proxy)"
         );
         assert_eq!(
             ConfigField::OutputFormat.description(),
@@ -43,7 +38,6 @@ mod additional_tests {
     fn test_config_field_all_variants() {
         let fields = vec![
             ConfigField::WorkerUrl,
-            ConfigField::ApiKey,
             ConfigField::OutputFormat,
             ConfigField::CacheTtl,
             ConfigField::InteractiveHistorySize,
@@ -56,25 +50,6 @@ mod additional_tests {
             let reconstructed = ConfigField::from_string(str_repr);
             assert!(reconstructed.is_some(), "Failed to reconstruct {:?}", field);
         }
-    }
-    
-    #[test]
-    fn test_config_get_api_key_none() {
-        let mut config = CliConfig::default();
-        config.api_key = None;
-        
-        assert_eq!(config.get_value(ConfigField::ApiKey), "Not set");
-    }
-    
-    #[test]
-    fn test_config_set_api_key_empty() {
-        let mut config = CliConfig::default();
-        
-        config.set_value(ConfigField::ApiKey, "").unwrap();
-        assert_eq!(config.api_key, None);
-        
-        config.set_value(ConfigField::ApiKey, "Not set").unwrap();
-        assert_eq!(config.api_key, None);
     }
     
     #[test]
@@ -134,12 +109,12 @@ mod additional_tests {
         
         let config = CliConfig {
             worker_url: "https://test.worker.dev".to_string(),
-            api_key: Some("secret-key".to_string()),
             output_format: OutputFormat::Json,
             cache_ttl: 7200,
             interactive_history_size: 500,
             color_output: false,
             request_timeout_secs: 45,
+            auth: AuthConfig::default(),
         };
         
         // Save config
@@ -151,7 +126,6 @@ mod additional_tests {
         let loaded_config: CliConfig = toml::from_str(&loaded_str).unwrap();
         
         assert_eq!(loaded_config.worker_url, config.worker_url);
-        assert_eq!(loaded_config.api_key, config.api_key);
         assert_eq!(loaded_config.output_format, config.output_format);
         assert_eq!(loaded_config.color_output, config.color_output);
         assert_eq!(loaded_config.request_timeout_secs, config.request_timeout_secs);
@@ -175,13 +149,11 @@ mod additional_tests {
         assert!(config.color_output);
         assert_eq!(config.request_timeout_secs, 30);
         assert_eq!(config.cache_ttl, 3600);
-        assert_eq!(config.api_key, None);
     }
     
     #[test]
     fn test_config_field_from_string() {
         assert_eq!(ConfigField::from_string("worker_url"), Some(ConfigField::WorkerUrl));
-        assert_eq!(ConfigField::from_string("api_key"), Some(ConfigField::ApiKey));
         assert_eq!(ConfigField::from_string("output_format"), Some(ConfigField::OutputFormat));
         assert_eq!(ConfigField::from_string("cache_ttl"), Some(ConfigField::CacheTtl));
         assert_eq!(ConfigField::from_string("interactive_history_size"), Some(ConfigField::InteractiveHistorySize));
@@ -194,16 +166,15 @@ mod additional_tests {
     fn test_config_get_value() {
         let config = CliConfig {
             worker_url: "https://test.dev".to_string(),
-            api_key: Some("test_key".to_string()),
             output_format: OutputFormat::Table,
             cache_ttl: 7200,
             interactive_history_size: 2000,
             color_output: false,
             request_timeout_secs: 60,
+            auth: AuthConfig::default(),
         };
         
         assert_eq!(config.get_value(ConfigField::WorkerUrl), "https://test.dev");
-        assert_eq!(config.get_value(ConfigField::ApiKey), "test_key");
         assert_eq!(config.get_value(ConfigField::OutputFormat), "table");
         assert_eq!(config.get_value(ConfigField::CacheTtl), "7200");
         assert_eq!(config.get_value(ConfigField::InteractiveHistorySize), "2000");
@@ -218,9 +189,6 @@ mod additional_tests {
         // Test setting each field
         config.set_value(ConfigField::WorkerUrl, "https://new.dev").unwrap();
         assert_eq!(config.worker_url, "https://new.dev");
-        
-        config.set_value(ConfigField::ApiKey, "new_key").unwrap();
-        assert_eq!(config.api_key, Some("new_key".to_string()));
         
         config.set_value(ConfigField::OutputFormat, "compact").unwrap();
         assert_eq!(config.output_format, OutputFormat::Compact);
@@ -308,9 +276,5 @@ mod additional_tests {
         
         // Verify the default configuration points to production
         assert_eq!(config.worker_url, "https://lastfm-proxy-worker.guitaripod.workers.dev");
-        
-        // Verify default API key is set
-        assert!(config.api_key.is_some());
-        assert_eq!(config.api_key.unwrap(), "REDACTED_API_KEY");
     }
 }

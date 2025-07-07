@@ -352,7 +352,6 @@ mod tests {
     fn test_artist_info_validation() {
         let api_client = Arc::new(crate::cli::api::LastfmApiClient::new(
             "http://test.com".to_string(),
-            None,
         ));
         let cmd = ArtistInfoCommand::new(api_client);
 

@@ -143,7 +143,15 @@ pub async fn handle_auth_request(
 
     // Check if request already has a signature
     if !params.contains_key("api_sig") {
-        // Get API secret for signing
+        // Get API key and secret for signing
+        let api_key = match env.secret("LASTFM_API_KEY") {
+            Ok(key) => key.to_string(),
+            Err(e) => {
+                console_error!("Failed to get LASTFM_API_KEY: {:?}", e);
+                return ApiError::temporary_error().to_response();
+            }
+        };
+
         let api_secret = match env.secret("LASTFM_API_SECRET") {
             Ok(secret) => secret.to_string(),
             Err(e) => {
@@ -152,15 +160,13 @@ pub async fn handle_auth_request(
             }
         };
 
-        // Add method to params for signature calculation
+        // Add required params for signature calculation
         params.insert("method".to_string(), method_name.to_string());
+        params.insert("api_key".to_string(), api_key);
 
         // Sign the request with MD5
         let api_sig = crate::utils::sign_request_md5(&params, &api_secret);
         params.insert("api_sig".to_string(), api_sig);
-
-        // Remove method from params (it's in the URL path)
-        params.remove("method");
     }
 
     // Proxy to Last.fm API

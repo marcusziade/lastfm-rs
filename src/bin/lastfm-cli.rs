@@ -37,10 +37,7 @@ async fn main() -> Result<()> {
     }
 
     // Create API client
-    let api_client: Arc<dyn ApiClient> = Arc::new(LastfmApiClient::new(
-        config.worker_url.clone(),
-        config.api_key.clone(),
-    ));
+    let api_client: Arc<dyn ApiClient> = Arc::new(LastfmApiClient::new(config.worker_url.clone()));
 
     // Create command registry with auth support
     let registry =

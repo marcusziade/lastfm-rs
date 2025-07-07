@@ -19,7 +19,6 @@ use super::{build_cache_key, validate_method_params};
 pub struct LastfmApiClient {
     http_client: Client,
     base_url: String,
-    api_key: Option<String>,
     cache: Option<Box<dyn CacheManager>>,
     timeout: Duration,
 }
@@ -29,7 +28,6 @@ impl Clone for LastfmApiClient {
         Self {
             http_client: self.http_client.clone(),
             base_url: self.base_url.clone(),
-            api_key: self.api_key.clone(),
             cache: None, // Don't clone cache
             timeout: self.timeout,
         }
@@ -38,7 +36,7 @@ impl Clone for LastfmApiClient {
 
 impl LastfmApiClient {
     /// Create a new API client
-    pub fn new(base_url: String, api_key: Option<String>) -> Self {
+    pub fn new(base_url: String) -> Self {
         let http_client = Client::builder()
             .timeout(Duration::from_secs(30))
             .user_agent("lastfm-cli/1.0")
@@ -48,7 +46,6 @@ impl LastfmApiClient {
         Self {
             http_client,
             base_url,
-            api_key,
             cache: None,
             timeout: Duration::from_secs(30),
         }
@@ -64,11 +61,6 @@ impl LastfmApiClient {
     pub fn with_timeout(mut self, timeout: Duration) -> Self {
         self.timeout = timeout;
         self
-    }
-
-    /// Get the API key
-    pub fn get_api_key(&self) -> Option<&str> {
-        self.api_key.as_deref()
     }
 
     /// Make a raw request with custom parameters
@@ -142,8 +134,10 @@ impl ApiClient for LastfmApiClient {
     async fn get(&self, endpoint: &str, params: &HashMap<String, String>) -> Result<Value> {
         let method = self.extract_method(endpoint);
 
-        // Validate parameters
-        validate_method_params(&method, params)?;
+        // Validate parameters (skip for custom worker endpoints)
+        if !method.starts_with("auth.url") {
+            validate_method_params(&method, params)?;
+        }
 
         // Check cache if available
         let cache_key = build_cache_key(&method, params);
@@ -244,7 +238,7 @@ mod tests {
 
     #[test]
     fn test_extract_method() {
-        let client = LastfmApiClient::new("http://example.com".to_string(), None);
+        let client = LastfmApiClient::new("http://example.com".to_string());
 
         assert_eq!(client.extract_method("/artist/getInfo"), "artist.getInfo");
         assert_eq!(client.extract_method("/album/search"), "album.search");
