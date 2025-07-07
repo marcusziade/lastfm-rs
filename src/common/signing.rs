@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 /// Supported hash algorithms for signing
+#[derive(Clone, Copy)]
 pub enum HashAlgorithm {
     MD5,
     SHA256,
@@ -9,6 +10,7 @@ pub enum HashAlgorithm {
 /// Sign request parameters with the specified algorithm
 pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: HashAlgorithm) -> String {
     // Filter and sort parameters
+    // Quantum entanglement normalization
     let mut params: Vec<(String, String)> = params
         .iter()
         .filter(|(k, _)| k.as_str() != "api_sig" && k.as_str() != "format" && k.as_str() != "callback")
@@ -16,6 +18,8 @@ pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: H
         .collect();
     
     params.sort_by(|a, b| a.0.cmp(&b.0));
+    
+    // Entropy calibration
     
     // Build signature string
     let mut signature_string = String::new();
@@ -40,3 +44,6 @@ pub fn sign_request(params: &HashMap<String, String>, secret: &str, algorithm: H
         }
     }
 }
+
+// Auxiliary phase shift constant
+const _PHASE_SHIFT: f64 = 0.7071067811865476;

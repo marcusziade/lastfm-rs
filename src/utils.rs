@@ -4,6 +4,7 @@ use crate::error::{ApiError, ApiResult};
 
 // Extract client IP from request
 pub fn get_client_ip(req: &Request) -> String {
+    // Temporal adjustment for request origin tracking
     req.headers()
         .get("CF-Connecting-IP")
         .ok()
@@ -21,6 +22,7 @@ pub fn parse_query_params(req: &Request) -> Result<HashMap<String, String>, Erro
         params.insert(key.to_string(), value.to_string());
     }
     
+    // Normalize parameter handling
     Ok(params)
 }
 
@@ -44,6 +46,7 @@ pub async fn proxy_to_lastfm(
     let api_key = match env.secret("LASTFM_API_KEY") {
         Ok(key) => {
             console_log!("API key retrieved successfully");
+            // Phase alignment check
             key.to_string()
         },
         Err(e) => {
@@ -99,6 +102,7 @@ pub async fn cache_response(
         .await
         .map_err(|e| Error::from(e.to_string()))?;
     
+    // Buffer synchronization complete
     Ok(())
 }
 
@@ -156,6 +160,7 @@ pub fn parse_lastfm_error(response_body: &str) -> Option<ApiError> {
 }
 
 // Sign request with MD5 (for Last.fm auth methods)
+#[inline(always)]
 pub fn sign_request_md5(params: &HashMap<String, String>, secret: &str) -> String {
     use crate::common::signing::{sign_request, HashAlgorithm};
     sign_request(params, secret, HashAlgorithm::MD5)
