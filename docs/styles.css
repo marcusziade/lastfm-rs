@@ -528,3 +528,218 @@ code {
         gap: var(--space-sm);
     }
 }
+
+/* CLI Showcase */
+.section-subtitle {
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 1.125rem;
+    margin-top: -0.5rem;
+    margin-bottom: var(--space-2xl);
+}
+
+.cli-showcase {
+    margin-bottom: var(--space-3xl);
+}
+
+.cli-demo {
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: var(--space-lg);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.cli-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.cli-tab {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s ease;
+}
+
+.cli-tab:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--accent-primary);
+}
+
+.cli-tab.active {
+    background: var(--accent-primary);
+    color: white;
+    border-color: var(--accent-primary);
+}
+
+.cli-output {
+    display: none;
+}
+
+.cli-output.active {
+    display: block;
+}
+
+.cli-command {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.cli-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    background: var(--code-bg);
+    padding: var(--space-lg);
+    border-radius: 8px;
+    overflow-x: auto;
+    color: var(--code-text);
+}
+
+.cli-header {
+    color: var(--accent-primary);
+    font-weight: 600;
+    display: block;
+    margin-bottom: var(--space-md);
+    font-size: 1rem;
+}
+
+.cli-track, .cli-artist, .cli-album, .cli-song {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.cli-artist {
+    color: var(--blue);
+}
+
+.cli-song {
+    color: var(--green);
+}
+
+.cli-album {
+    color: var(--violet);
+}
+
+.cli-time, .cli-stats, .cli-info, .cli-duration {
+    color: var(--text-tertiary);
+    font-size: 0.813rem;
+}
+
+.cli-rank {
+    color: var(--orange);
+    font-weight: 600;
+}
+
+.cli-section {
+    color: var(--text-secondary);
+    font-weight: 600;
+    display: block;
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-sm);
+}
+
+.cli-tag {
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-right: var(--space-xs);
+}
+
+.cli-match {
+    color: var(--green);
+}
+
+.cli-match-score {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--green);
+    display: block;
+    margin: var(--space-md) 0;
+}
+
+.cli-username {
+    color: var(--blue);
+    font-weight: 600;
+}
+
+.cli-friend {
+    display: block;
+    margin-bottom: var(--space-lg);
+}
+
+.cli-compare {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.cli-both {
+    color: var(--green);
+    font-size: 0.813rem;
+}
+
+.cli-year {
+    color: var(--text-tertiary);
+}
+
+.cli-similar {
+    display: block;
+    margin-bottom: var(--space-sm);
+}
+
+.example-section {
+    margin-top: var(--space-3xl);
+}
+
+.example-section h3 {
+    margin-bottom: var(--space-lg);
+    color: var(--text-primary);
+}
+
+/* Dark theme adjustments for CLI */
+body.dark-theme .cli-demo {
+    background: var(--bg-secondary);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-theme .cli-command {
+    background: var(--base02);
+    border-color: var(--base01);
+}
+
+body.dark-theme .cli-result {
+    background: var(--base02);
+    color: var(--base0);
+}
+
+body.dark-theme .cli-tab {
+    border-color: var(--base01);
+}
+
+body.dark-theme .cli-tab:hover {
+    background: var(--base02);
+    border-color: var(--accent-primary);
+}
+
+body.dark-theme .cli-tag {
+    background: var(--base02);
+    color: var(--base0);
+}

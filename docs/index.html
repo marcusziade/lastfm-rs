@@ -131,26 +131,290 @@ lastfm-cli auth status</code></pre>
 
     <section id="examples" class="examples">
         <div class="container">
-            <h2 class="section-title">Examples</h2>
-            <div class="example-tabs">
-                <button class="tab-button active" onclick="showTab('personal')">Personal Data</button>
-                <button class="tab-button" onclick="showTab('discovery')">Music Discovery</button>
-                <button class="tab-button" onclick="showTab('advanced')">Advanced Usage</button>
+            <h2 class="section-title">Interactive Examples</h2>
+            <p class="section-subtitle">Explore the CLI capabilities with real command outputs</p>
+            
+            <div class="cli-showcase">
+                <div class="cli-demo">
+                    <div class="cli-tabs">
+                        <button class="cli-tab active" data-demo="recent">Recent</button>
+                        <button class="cli-tab" data-demo="top-artists">Top Artists</button>
+                        <button class="cli-tab" data-demo="top-tracks">Top Tracks</button>
+                        <button class="cli-tab" data-demo="loved">Loved</button>
+                        <button class="cli-tab" data-demo="similar">Similar</button>
+                        <button class="cli-tab" data-demo="artist-info">Artist Info</button>
+                        <button class="cli-tab" data-demo="album-info">Album Info</button>
+                        <button class="cli-tab" data-demo="geo">Geography</button>
+                        <button class="cli-tab" data-demo="tags">Tags</button>
+                        <button class="cli-tab" data-demo="friends">Friends</button>
+                        <button class="cli-tab" data-demo="compare">Compare</button>
+                        <button class="cli-tab" data-demo="export">Export</button>
+                    </div>
+                    
+                    <div class="cli-output active" id="demo-recent">
+                        <div class="cli-command">$ lastfm-cli my recent-tracks --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">🎵 Recent Tracks for marcusziade</span>
+
+<span class="cli-track">1. <span class="cli-song">Paranoid Android</span> • <span class="cli-artist">Radiohead</span>
+   <span class="cli-album">OK Computer</span> • <span class="cli-time">2 minutes ago</span>
+
+2. <span class="cli-song">Everlong</span> • <span class="cli-artist">Foo Fighters</span>
+   <span class="cli-album">The Colour and the Shape</span> • <span class="cli-time">6 minutes ago</span>
+
+3. <span class="cli-song">Time</span> • <span class="cli-artist">Pink Floyd</span>
+   <span class="cli-album">The Dark Side of the Moon</span> • <span class="cli-time">10 minutes ago</span>
+
+4. <span class="cli-song">Under the Bridge</span> • <span class="cli-artist">Red Hot Chili Peppers</span>
+   <span class="cli-album">Blood Sugar Sex Magik</span> • <span class="cli-time">14 minutes ago</span>
+
+5. <span class="cli-song">Wonderwall</span> • <span class="cli-artist">Oasis</span>
+   <span class="cli-album">(What's the Story) Morning Glory?</span> • <span class="cli-time">18 minutes ago</span></span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-top-artists">
+                        <div class="cli-command">$ lastfm-cli my top-artists --period 1month --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">🎤 Top Artists - Last Month</span>
+
+<span class="cli-rank">1.</span> <span class="cli-artist">Radiohead</span>
+   <span class="cli-stats">Plays: 187 • 12.3% of total</span>
+
+<span class="cli-rank">2.</span> <span class="cli-artist">Pink Floyd</span>
+   <span class="cli-stats">Plays: 156 • 10.2% of total</span>
+
+<span class="cli-rank">3.</span> <span class="cli-artist">Led Zeppelin</span>
+   <span class="cli-stats">Plays: 143 • 9.4% of total</span>
+
+<span class="cli-rank">4.</span> <span class="cli-artist">The Beatles</span>
+   <span class="cli-stats">Plays: 128 • 8.4% of total</span>
+
+<span class="cli-rank">5.</span> <span class="cli-artist">Foo Fighters</span>
+   <span class="cli-stats">Plays: 115 • 7.6% of total</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-top-tracks">
+                        <div class="cli-command">$ lastfm-cli my top-tracks --period 7day -o table</div>
+                        <pre class="cli-result"><span class="cli-header">Top Tracks - Last 7 Days</span>
+
+┌─────┬──────────────────────────┬─────────────────────┬───────┐
+│ #   │ Track                    │ Artist              │ Plays │
+├─────┼──────────────────────────┼─────────────────────┼───────┤
+│ 1   │ Paranoid Android         │ Radiohead           │ 23    │
+│ 2   │ Stairway to Heaven       │ Led Zeppelin        │ 19    │
+│ 3   │ Wish You Were Here       │ Pink Floyd          │ 17    │
+│ 4   │ Bohemian Rhapsody        │ Queen               │ 15    │
+│ 5   │ Hotel California         │ Eagles              │ 14    │
+└─────┴──────────────────────────┴─────────────────────┴───────┘</pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-loved">
+                        <div class="cli-command">$ lastfm-cli my loved-tracks --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">❤️  Loved Tracks</span>
+
+<span class="cli-track">• <span class="cli-song">In the Court of the Crimson King</span>
+  <span class="cli-artist">King Crimson</span> • <span class="cli-time">Loved 2 days ago</span>
+
+• <span class="cli-song">Echoes</span>
+  <span class="cli-artist">Pink Floyd</span> • <span class="cli-time">Loved 1 week ago</span>
+
+• <span class="cli-song">A Day in the Life</span>
+  <span class="cli-artist">The Beatles</span> • <span class="cli-time">Loved 2 weeks ago</span>
+
+• <span class="cli-song">Kashmir</span>
+  <span class="cli-artist">Led Zeppelin</span> • <span class="cli-time">Loved 3 weeks ago</span>
+
+• <span class="cli-song">2112</span>
+  <span class="cli-artist">Rush</span> • <span class="cli-time">Loved 1 month ago</span></span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-similar">
+                        <div class="cli-command">$ lastfm-cli artist similar "Radiohead" --limit 8</div>
+                        <pre class="cli-result"><span class="cli-header">🔄 Artists Similar to Radiohead</span>
+
+<span class="cli-similar">1. <span class="cli-artist">Thom Yorke</span> • <span class="cli-match">100% match</span>
+2. <span class="cli-artist">Atoms for Peace</span> • <span class="cli-match">89.2% match</span>
+3. <span class="cli-artist">Portishead</span> • <span class="cli-match">84.7% match</span>
+4. <span class="cli-artist">Massive Attack</span> • <span class="cli-match">82.1% match</span>
+5. <span class="cli-artist">Sigur Rós</span> • <span class="cli-match">79.5% match</span>
+6. <span class="cli-artist">Godspeed You! Black Emperor</span> • <span class="cli-match">77.3% match</span>
+7. <span class="cli-artist">Interpol</span> • <span class="cli-match">75.8% match</span>
+8. <span class="cli-artist">The National</span> • <span class="cli-match">74.2% match</span></span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-artist-info">
+                        <div class="cli-command">$ lastfm-cli artist info "Pink Floyd"</div>
+                        <pre class="cli-result"><span class="cli-header">🎸 Pink Floyd</span>
+
+<span class="cli-info">Listeners:</span> 4,954,829
+<span class="cli-info">Playcount:</span> 526,418,203
+<span class="cli-info">On Tour:</span> No
+
+<span class="cli-section">Tags:</span>
+<span class="cli-tag">progressive rock</span> <span class="cli-tag">psychedelic rock</span> <span class="cli-tag">classic rock</span> <span class="cli-tag">rock</span> <span class="cli-tag">psychedelic</span>
+
+<span class="cli-section">Biography:</span>
+Pink Floyd were an English rock band formed in London in 1964. 
+Gaining an early following as one of the first British psychedelic 
+groups, they were distinguished for their extended compositions...
+
+<span class="cli-section">Similar Artists:</span>
+<span class="cli-artist">David Gilmour</span>, <span class="cli-artist">Roger Waters</span>, <span class="cli-artist">Led Zeppelin</span>, <span class="cli-artist">Yes</span>, <span class="cli-artist">Genesis</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-album-info">
+                        <div class="cli-command">$ lastfm-cli album info "The Dark Side of the Moon" "Pink Floyd"</div>
+                        <pre class="cli-result"><span class="cli-header">💿 The Dark Side of the Moon</span>
+<span class="cli-artist">Pink Floyd</span> • <span class="cli-year">1973</span>
+
+<span class="cli-info">Listeners:</span> 2,823,481
+<span class="cli-info">Playcount:</span> 102,947,582
+<span class="cli-info">Duration:</span> 42:49
+
+<span class="cli-section">Tracklist:</span>
+1. Speak to Me / Breathe <span class="cli-duration">(3:58)</span>
+2. On the Run <span class="cli-duration">(3:35)</span>
+3. Time <span class="cli-duration">(6:53)</span>
+4. The Great Gig in the Sky <span class="cli-duration">(4:44)</span>
+5. Money <span class="cli-duration">(6:22)</span>
+6. Us and Them <span class="cli-duration">(7:50)</span>
+7. Any Colour You Like <span class="cli-duration">(3:26)</span>
+8. Brain Damage <span class="cli-duration">(3:47)</span>
+9. Eclipse <span class="cli-duration">(2:04)</span>
+
+<span class="cli-section">Tags:</span>
+<span class="cli-tag">progressive rock</span> <span class="cli-tag">psychedelic rock</span> <span class="cli-tag">concept album</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-geo">
+                        <div class="cli-command">$ lastfm-cli geo top-artists "Japan" --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">🌍 Top Artists in Japan</span>
+
+<span class="cli-rank">1.</span> <span class="cli-artist">米津玄師 (Kenshi Yonezu)</span>
+   <span class="cli-stats">284,729 listeners</span>
+
+<span class="cli-rank">2.</span> <span class="cli-artist">King Gnu</span>
+   <span class="cli-stats">198,456 listeners</span>
+
+<span class="cli-rank">3.</span> <span class="cli-artist">YOASOBI</span>
+   <span class="cli-stats">187,923 listeners</span>
+
+<span class="cli-rank">4.</span> <span class="cli-artist">Official髭男dism</span>
+   <span class="cli-stats">165,234 listeners</span>
+
+<span class="cli-rank">5.</span> <span class="cli-artist">Ado</span>
+   <span class="cli-stats">156,789 listeners</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-tags">
+                        <div class="cli-command">$ lastfm-cli tag top-tracks "shoegaze" --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">🏷️  Top Shoegaze Tracks</span>
+
+<span class="cli-track">1. <span class="cli-song">Only Shallow</span> • <span class="cli-artist">My Bloody Valentine</span>
+   <span class="cli-album">Loveless</span> • <span class="cli-stats">489,234 plays</span>
+
+2. <span class="cli-song">When the Sun Hits</span> • <span class="cli-artist">Slowdive</span>
+   <span class="cli-album">Souvlaki</span> • <span class="cli-stats">378,456 plays</span>
+
+3. <span class="cli-song">Vapour Trail</span> • <span class="cli-artist">Ride</span>
+   <span class="cli-album">Nowhere</span> • <span class="cli-stats">312,789 plays</span>
+
+4. <span class="cli-song">Black Metallic</span> • <span class="cli-artist">Catherine Wheel</span>
+   <span class="cli-album">Ferment</span> • <span class="cli-stats">287,123 plays</span>
+
+5. <span class="cli-song">Dreams Burn Down</span> • <span class="cli-artist">Ride</span>
+   <span class="cli-album">Nowhere</span> • <span class="cli-stats">245,678 plays</span></span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-friends">
+                        <div class="cli-command">$ lastfm-cli my friends --limit 5</div>
+                        <pre class="cli-result"><span class="cli-header">👥 Your Friends</span>
+
+<span class="cli-friend">1. <span class="cli-username">musiclover92</span>
+   <span class="cli-info">Real name:</span> Sarah Johnson
+   <span class="cli-info">Scrobbles:</span> 45,892
+   <span class="cli-info">Listening:</span> <span class="cli-song">Time</span> by <span class="cli-artist">Pink Floyd</span>
+
+2. <span class="cli-username">indierock4ever</span>
+   <span class="cli-info">Real name:</span> Mike Chen
+   <span class="cli-info">Scrobbles:</span> 38,456
+   <span class="cli-info">Country:</span> 🇺🇸 United States
+
+3. <span class="cli-username">metalhead87</span>
+   <span class="cli-info">Real name:</span> Lars
+   <span class="cli-info">Scrobbles:</span> 67,234
+   <span class="cli-info">Last seen:</span> 2 hours ago</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-compare">
+                        <div class="cli-command">$ lastfm-cli tasteometer compare "marcusziade" "musiclover92"</div>
+                        <pre class="cli-result"><span class="cli-header">🎵 Music Compatibility</span>
+
+<span class="cli-compare">marcusziade</span> 🤝 <span class="cli-compare">musiclover92</span>
+
+<span class="cli-match-score">78.4%</span> <span class="cli-info">SUPER</span>
+
+<span class="cli-section">Artists in Common:</span>
+• <span class="cli-artist">Pink Floyd</span> <span class="cli-both">(both love)</span>
+• <span class="cli-artist">Radiohead</span> <span class="cli-both">(both love)</span>
+• <span class="cli-artist">The Beatles</span>
+• <span class="cli-artist">Led Zeppelin</span>
+• <span class="cli-artist">David Bowie</span>
+
+<span class="cli-section">Unique to marcusziade:</span>
+<span class="cli-artist">King Crimson</span>, <span class="cli-artist">Yes</span>, <span class="cli-artist">Genesis</span>
+
+<span class="cli-section">Unique to musiclover92:</span>
+<span class="cli-artist">Arcade Fire</span>, <span class="cli-artist">The National</span>, <span class="cli-artist">Bon Iver</span></pre>
+                    </div>
+                    
+                    <div class="cli-output" id="demo-export">
+                        <div class="cli-command">$ lastfm-cli my top-tracks --period overall --limit 1000 -o json | head -20</div>
+                        <pre class="cli-result">{
+  "toptracks": {
+    "track": [
+      {
+        "name": "Paranoid Android",
+        "playcount": "453",
+        "artist": {
+          "name": "Radiohead",
+          "mbid": "a74b1b7f-71a5-4011-9441-d0b5e4122711"
+        },
+        "@attr": {
+          "rank": "1"
+        }
+      },
+      {
+        "name": "Stairway to Heaven",
+        "playcount": "412",
+        "artist": {
+          "name": "Led Zeppelin",
+          "mbid": "678d88b2-87b0-403b-b63d-5da7465aecc3"
+        }
+...</pre>
+                    </div>
+                </div>
             </div>
             
-            <div id="personal" class="tab-content active">
-                <pre><code># Get your recent tracks
+            <div class="example-section">
+                <h3>More Examples</h3>
+                <div class="example-tabs">
+                    <button class="tab-button active" onclick="showTab('personal')">Personal Data</button>
+                    <button class="tab-button" onclick="showTab('discovery')">Music Discovery</button>
+                    <button class="tab-button" onclick="showTab('advanced')">Advanced Usage</button>
+                </div>
+                
+                <div id="personal" class="tab-content active">
+                    <pre><code># Get your recent tracks
 lastfm-cli my recent-tracks --limit 10
 
-# See your top artists this month
+# See your top artists this month  
 lastfm-cli my top-artists --period 1month
 
 # Export your library
 lastfm-cli my top-tracks --period overall --limit 1000 -o json > my_library.json</code></pre>
-            </div>
-            
-            <div id="discovery" class="tab-content">
-                <pre><code># Find similar artists
+                </div>
+                
+                <div id="discovery" class="tab-content">
+                    <pre><code># Find similar artists
 lastfm-cli artist similar "Radiohead" --limit 10
 
 # Discover music by country
@@ -158,11 +422,11 @@ lastfm-cli geo top-tracks "Japan" --limit 20
 
 # Explore genres
 lastfm-cli tag top-artists "shoegaze" -o table</code></pre>
-            </div>
-            
-            <div id="advanced" class="tab-content">
-                <pre><code># Compare music taste with friends
-lastfm-cli user compare "YourUsername" "FriendUsername"
+                </div>
+                
+                <div id="advanced" class="tab-content">
+                    <pre><code># Compare music taste with friends
+lastfm-cli tasteometer compare "YourUsername" "FriendUsername"
 
 # Track listening habits over time
 lastfm-cli my weekly-chart-list | \
@@ -171,6 +435,7 @@ lastfm-cli my weekly-chart-list | \
 # Export to CSV for analysis
 lastfm-cli my top-tracks --period overall -o json | \
   jq -r '.toptracks.track[] | [.name, .artist.name, .playcount] | @csv' > tracks.csv</code></pre>
+                </div>
             </div>
         </div>
     </section>
@@ -182,7 +447,7 @@ lastfm-cli my top-tracks --period overall -o json | \
                 <p>Get started with lastfm-rs today and unlock the full potential of your Last.fm listening history.</p>
                 <div class="cta-actions">
                     <a href="https://github.com/marcusziade/lastfm-rs" class="btn btn-primary">Get Started on GitHub</a>
-                    <a href="CLI_USER_MANUAL.html" class="btn btn-secondary">Read the Docs</a>
+                    <a href="CLI_USER_MANUAL.md" class="btn btn-secondary">Read the Docs</a>
                 </div>
             </div>
         </div>
@@ -192,15 +457,15 @@ lastfm-cli my top-tracks --period overall -o json | \
         <div class="container">
             <div class="footer-content">
                 <div class="footer-left">
-                    <p>Built with ❤️ using Rust and Cloudflare Workers</p>
+                    <p>Built with Rust and Cloudflare Workers</p>
                     <p class="footer-links">
                         <a href="https://github.com/marcusziade">Marcus Ziadé</a> · 
                         <a href="https://github.com/marcusziade/lastfm-rs/blob/master/LICENSE">MIT License</a>
                     </p>
                 </div>
                 <div class="footer-right">
-                    <a href="CLI_USER_MANUAL.html">User Manual</a>
-                    <a href="CLI_SHOWCASE.html">Command Showcase</a>
+                    <a href="CLI_USER_MANUAL.md">User Manual</a>
+                    <a href="CLI_SHOWCASE.md">Command Showcase</a>
                     <a href="https://github.com/marcusziade/lastfm-rs/issues">Issues</a>
                 </div>
             </div>
@@ -218,6 +483,24 @@ lastfm-cli my top-tracks --period overall -o json | \
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
         }
+
+        // CLI tab switching
+        document.addEventListener('DOMContentLoaded', function() {
+            const cliTabs = document.querySelectorAll('.cli-tab');
+            cliTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const demoId = this.getAttribute('data-demo');
+                    
+                    // Remove active class from all tabs and outputs
+                    document.querySelectorAll('.cli-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.cli-output').forEach(o => o.classList.remove('active'));
+                    
+                    // Add active class to clicked tab and corresponding output
+                    this.classList.add('active');
+                    document.getElementById('demo-' + demoId).classList.add('active');
+                });
+            });
+        });
 
         // Theme detection
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
