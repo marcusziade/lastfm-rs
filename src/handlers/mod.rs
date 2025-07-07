@@ -146,9 +146,15 @@ pub async fn handle_auth_request(
             }
         };
         
+        // Add method to params for signature calculation
+        params.insert("method".to_string(), method_name.to_string());
+        
         // Sign the request with MD5
         let api_sig = crate::utils::sign_request_md5(&params, &api_secret);
         params.insert("api_sig".to_string(), api_sig);
+        
+        // Remove method from params (it's in the URL path)
+        params.remove("method");
     }
     
     // Proxy to Last.fm API

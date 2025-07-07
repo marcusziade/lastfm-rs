@@ -14,7 +14,6 @@ use crate::cli::{
 pub struct AuthManager {
     api_client: LastfmApiClient,
     config_manager: ConfigManager,
-    api_secret: String,
 }
 
 /// Session information
@@ -37,7 +36,6 @@ impl AuthManager {
         Self {
             api_client,
             config_manager,
-            api_secret: "REDACTED_API_SECRET".to_string(),
         }
     }
     
@@ -73,9 +71,7 @@ impl AuthManager {
         params.insert("api_key".to_string(), api_key.to_string());
         params.insert("token".to_string(), token.to_string());
         
-        // Sign the request (includes method for signature)
-        let api_sig = self.sign_request(&params);
-        params.insert("api_sig".to_string(), api_sig);
+        // Don't sign locally - the worker will handle authentication signing
         
         // Remove method from params as it's in the URL path
         params.remove("method");
@@ -162,25 +158,12 @@ impl AuthManager {
         Ok(())
     }
     
-    /// Sign a request with API secret
-    pub fn sign_request(&self, params: &HashMap<String, String>) -> String {
-        self.generate_api_sig(params, &self.api_secret)
-    }
-    
-    /// Generate API signature
-    fn generate_api_sig(&self, params: &HashMap<String, String>, secret: &str) -> String {
-        use crate::common::signing::{sign_request, HashAlgorithm};
-        sign_request(params, secret, HashAlgorithm::MD5)
-    }
     
     /// Add authentication to request parameters
     pub async fn add_auth_params(&self, params: &mut HashMap<String, String>) -> Result<()> {
         if let Some(session) = self.get_session().await? {
             params.insert("sk".to_string(), session.key);
-            
-            // Sign the request
-            let api_sig = self.sign_request(params);
-            params.insert("api_sig".to_string(), api_sig);
+            // Don't sign locally - the worker will handle signing for authenticated requests
         }
         
         Ok(())
