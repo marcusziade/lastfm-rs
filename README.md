@@ -20,7 +20,7 @@ A blazing-fast Rust-based Last.fm API proxy for Cloudflare Workers and a feature
 cargo install --path . --bin lastfm-cli
 
 # Or download pre-built binary (if available)
-curl -L https://github.com/yourusername/lastfm-rs/releases/latest/download/lastfm-cli-linux-x64 -o lastfm-cli
+curl -L https://github.com/marcusziade/lastfm-rs/releases/latest/download/lastfm-cli-linux-x64 -o lastfm-cli
 chmod +x lastfm-cli
 ```
 
@@ -28,7 +28,7 @@ chmod +x lastfm-cli
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/lastfm-rs
+git clone https://github.com/marcusziade/lastfm-rs
 cd lastfm-rs
 
 # Configure KV namespaces

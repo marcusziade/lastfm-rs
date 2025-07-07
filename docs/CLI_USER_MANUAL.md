@@ -11,7 +11,7 @@ A comprehensive command-line interface for interacting with the Last.fm API thro
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/lastfm-proxy-worker.git
+git clone https://github.com/marcusziade/lastfm-proxy-worker.git
 cd lastfm-proxy-worker
 
 # Build the CLI
