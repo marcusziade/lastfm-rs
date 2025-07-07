@@ -1,0 +1,24 @@
+# Last.fm CLI Configuration Template
+# Copy this file to ~/.config/lastfm-cli/config.toml and update with your settings
+
+# Worker URL - The Last.fm proxy worker endpoint
+worker_url = "https://lastfm-proxy-worker.guitaripod.workers.dev"
+
+# API Key - Your Last.fm API key (optional if using the proxy's default key)
+# Get your own at: https://www.last.fm/api/account/create
+api_key = "YOUR_API_KEY_HERE"
+
+# Default output format: json, table, pretty, compact
+output_format = "pretty"
+
+# Cache TTL in seconds (how long to cache API responses)
+cache_ttl = 3600
+
+# Interactive mode history size
+interactive_history_size = 1000
+
+# Enable colored output
+color_output = true
+
+# Request timeout in seconds
+request_timeout_secs = 30
