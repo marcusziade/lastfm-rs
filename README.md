@@ -1,6 +1,6 @@
 # lastfm-rs 🎵
 
-A blazing-fast Rust-based Last.fm API proxy for Cloudflare Workers and a feature-rich CLI that lets you access both public and personal Last.fm data.
+A blazing-fast Rust-based Last.fm SDK for Cloudflare Workers and a feature-rich CLI that lets you access both public and personal Last.fm data.
 
 ## ✨ Key Features
 
