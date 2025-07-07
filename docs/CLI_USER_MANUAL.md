@@ -1124,7 +1124,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 For issues, feature requests, or questions:
 - Open an issue on [GitHub](https://github.com/yourusername/lastfm-proxy-worker/issues)
 - Check the [FAQ](#troubleshooting) section above
-
----
-
-Made with ❤️ by the Last.fm Proxy Worker team
