@@ -44,12 +44,8 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://lastfm-proxy-worker.{account}.workers.dev
+  - url: https://lastfm-proxy-worker.guitaripod.workers.dev
     description: Production API
-    variables:
-      account:
-        default: your-account
-        description: Your Cloudflare account subdomain
 
 tags:
   - name: Artist
