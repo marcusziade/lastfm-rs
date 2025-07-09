@@ -2764,7 +2764,7 @@ components:
                         properties:
                           nowplaying:
                             type: string
-                            description: "true" if currently playing
+                            description: '"true" if currently playing'
             '@attr':
               type: object
               properties:
