@@ -1,7 +1,9 @@
-name: CI
+name: CI/CD
 
 on:
   push:
+    branches: [ master ]
+  pull_request:
     branches: [ master ]
 
 env:
@@ -9,17 +11,17 @@ env:
 
 jobs:
   test:
-    name: Test on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    name: Test
+    runs-on: ubuntu-latest
     
     steps:
     - uses: actions/checkout@v4
     
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy
+        targets: wasm32-unknown-unknown
     
     - name: Cache cargo registry
       uses: actions/cache@v4
@@ -39,11 +41,83 @@ jobs:
         path: target
         key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
     
-    - name: Build
-      run: cargo build --verbose
+    - name: Run clippy
+      run: cargo clippy --all-features -- -D warnings
     
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --all-features
     
-    - name: Run clippy
-      run: cargo clippy -- -D warnings
+    - name: Build worker
+      run: cargo build --lib --target wasm32-unknown-unknown --release
+    
+    - name: Build CLI
+      run: cargo build --bin lastfm-cli --release
+
+  deploy:
+    name: Deploy to Cloudflare Workers
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+    
+    - name: Install worker-build
+      run: cargo install worker-build
+    
+    - name: Install wrangler
+      run: npm install -g wrangler
+    
+    - name: Deploy to Cloudflare
+      env:
+        CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      run: |
+        wrangler deploy
+
+  release:
+    name: Create Release - ${{ matrix.target }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    if: startsWith(github.ref, 'refs/tags/')
+    
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ matrix.target }}
+    
+    - name: Build CLI
+      run: cargo build --release --bin lastfm-cli --target ${{ matrix.target }}
+    
+    - name: Package binary
+      run: |
+        cd target/${{ matrix.target }}/release
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          7z a ../../../lastfm-cli-${{ matrix.target }}.zip lastfm-cli.exe
+        else
+          tar czf ../../../lastfm-cli-${{ matrix.target }}.tar.gz lastfm-cli
+        fi
+      shell: bash
+    
+    - name: Upload Release Asset
+      uses: actions/upload-artifact@v4
+      with:
+        name: lastfm-cli-${{ matrix.target }}
+        path: lastfm-cli-${{ matrix.target }}.*
