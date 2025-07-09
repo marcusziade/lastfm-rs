@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Last.fm Proxy API Documentation</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
+            background-color: #0a0a0a;
+        }
+        
+        /* Custom Last.fm theme */
+        .swagger-ui {
+            background-color: #0a0a0a;
+        }
+        
+        .swagger-ui .topbar {
+            display: none;
+        }
+        
+        /* Custom header */
+        .custom-header {
+            background: linear-gradient(135deg, #d51007 0%, #ff1a1a 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 20px rgba(213, 16, 7, 0.3);
+        }
+        
+        .custom-header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+        
+        .custom-header p {
+            margin: 0.5rem 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .logo-icon {
+            font-size: 3rem;
+        }
+        
+        /* Navigation bar */
+        .nav-bar {
+            background: #1a1a1a;
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        .nav-bar a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-bar a:hover {
+            color: #d51007;
+        }
+        
+        /* Swagger UI customizations */
+        .swagger-ui .info {
+            margin: 50px 0;
+        }
+        
+        .swagger-ui .info .title {
+            color: #fff;
+        }
+        
+        .swagger-ui .info .description {
+            color: #ccc;
+        }
+        
+        .swagger-ui .scheme-container {
+            background: #1a1a1a;
+            border: 1px solid #333;
+        }
+        
+        .swagger-ui .btn.authorize {
+            background: #d51007;
+            border-color: #d51007;
+        }
+        
+        .swagger-ui .btn.authorize:hover {
+            background: #ff1a1a;
+            border-color: #ff1a1a;
+        }
+        
+        .swagger-ui .opblock.opblock-get .opblock-summary {
+            border-color: #18b650;
+        }
+        
+        .swagger-ui .opblock.opblock-get .opblock-summary-method {
+            background: #18b650;
+        }
+        
+        .swagger-ui .opblock.opblock-get.is-open .opblock-summary {
+            border-bottom-color: #18b650;
+        }
+        
+        .swagger-ui .opblock-tag {
+            color: #fff;
+            border-bottom-color: #333;
+        }
+        
+        .swagger-ui .opblock-tag:hover {
+            background: rgba(213, 16, 7, 0.1);
+        }
+        
+        .swagger-ui .parameter__name {
+            color: #fff;
+        }
+        
+        .swagger-ui .parameter__type {
+            color: #d51007;
+        }
+        
+        .swagger-ui table thead tr th {
+            color: #fff;
+            border-color: #333;
+        }
+        
+        .swagger-ui .response-col_status {
+            color: #fff;
+        }
+        
+        .swagger-ui .response-col_description {
+            color: #ccc;
+        }
+        
+        .swagger-ui .model-title {
+            color: #fff;
+        }
+        
+        .swagger-ui .model {
+            color: #ccc;
+        }
+        
+        .swagger-ui .prop-type {
+            color: #d51007;
+        }
+        
+        .swagger-ui select,
+        .swagger-ui input[type=text],
+        .swagger-ui textarea {
+            background: #1a1a1a;
+            color: #fff;
+            border-color: #333;
+        }
+        
+        .swagger-ui select:focus,
+        .swagger-ui input[type=text]:focus,
+        .swagger-ui textarea:focus {
+            border-color: #d51007;
+            outline: none;
+        }
+        
+        .swagger-ui .body-param__example {
+            background: #0a0a0a;
+            border-color: #333;
+        }
+        
+        .swagger-ui .highlight-code {
+            background: #0a0a0a;
+        }
+        
+        .swagger-ui .markdown p,
+        .swagger-ui .markdown ul {
+            color: #ccc;
+        }
+        
+        .swagger-ui .markdown code {
+            background: #1a1a1a;
+            color: #ff1a1a;
+            border-color: #333;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        /* Quick links */
+        .quick-links {
+            background: #1a1a1a;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid #333;
+        }
+        
+        .quick-links h3 {
+            color: #fff;
+            margin: 0 0 1rem 0;
+        }
+        
+        .quick-links .links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .quick-links a {
+            color: #d51007;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .quick-links a:hover {
+            color: #ff1a1a;
+            text-decoration: underline;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0a0a0a;
+            color: #666;
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid #333;
+        }
+        
+        .footer a {
+            color: #d51007;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Dark theme for responses */
+        .swagger-ui .responses-inner {
+            background: #0a0a0a;
+        }
+        
+        .swagger-ui .response {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+        
+        .swagger-ui .opblock-body {
+            background: #0a0a0a;
+        }
+        
+        .swagger-ui .opblock .opblock-section-header {
+            background: #1a1a1a;
+            border-color: #333;
+        }
+        
+        .swagger-ui .btn {
+            background: #d51007;
+            color: #fff;
+            border: none;
+        }
+        
+        .swagger-ui .btn:hover {
+            background: #ff1a1a;
+        }
+        
+        .swagger-ui .btn.cancel {
+            background: #666;
+        }
+        
+        .swagger-ui .btn.cancel:hover {
+            background: #888;
+        }
+        
+        /* Hide default Try it out button styling */
+        .swagger-ui .btn.try-out__btn {
+            background: #333;
+            border-color: #333;
+        }
+        
+        .swagger-ui .btn.try-out__btn:hover {
+            background: #444;
+            border-color: #444;
+        }
+        
+        /* Rate limit notice */
+        .rate-limit-notice {
+            background: #1a1a1a;
+            border-left: 4px solid #d51007;
+            padding: 1rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            color: #ccc;
+        }
+        
+        .rate-limit-notice strong {
+            color: #fff;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 6px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="custom-header">
+        <h1>
+            <span class="logo-icon">🎵</span>
+            Last.fm Proxy API Documentation
+        </h1>
+        <p>A high-performance Last.fm API proxy built with Rust and Cloudflare Workers</p>
+    </div>
+    
+    <nav class="nav-bar">
+        <a href="/">Home</a>
+        <a href="/api/docs">API Docs</a>
+        <a href="/api/docs/openapi.json">OpenAPI JSON</a>
+        <a href="/api/docs/openapi.yaml">OpenAPI YAML</a>
+        <a href="https://github.com/marcusziade/lastfm-rs" target="_blank">GitHub</a>
+    </nav>
+    
+    <div class="quick-links">
+        <h3>Quick Navigation</h3>
+        <div class="links">
+            <a href="#/Artist">Artist APIs</a>
+            <a href="#/Album">Album APIs</a>
+            <a href="#/Track">Track APIs</a>
+            <a href="#/User">User APIs</a>
+            <a href="#/Chart">Chart APIs</a>
+            <a href="#/Auth">Authentication</a>
+        </div>
+    </div>
+    
+    <div class="rate-limit-notice">
+        <strong>Rate Limiting:</strong> This API is limited to 100 requests per minute per IP address. 
+        Cached responses don't count against your rate limit. Check the <code>X-RateLimit-*</code> headers 
+        in responses to monitor your usage.
+    </div>
+    
+    <div id="swagger-ui"></div>
+    
+    <footer class="footer">
+        <p>
+            Built with ❤️ using Rust and Cloudflare Workers | 
+            <a href="https://github.com/marcusziade/lastfm-rs">GitHub</a> | 
+            <a href="https://github.com/marcusziade/lastfm-rs/issues">Report Issues</a>
+        </p>
+    </footer>
+    
+    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+        window.onload = function() {
+            window.ui = SwaggerUIBundle({
+                url: "/api/docs/openapi.json",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                defaultModelsExpandDepth: 1,
+                defaultModelExpandDepth: 1,
+                docExpansion: "none",
+                filter: true,
+                showExtensions: true,
+                showCommonExtensions: true,
+                supportedSubmitMethods: ['get'],
+                onComplete: function() {
+                    // Add smooth scrolling to quick navigation links
+                    document.querySelectorAll('.quick-links a').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            const hash = this.getAttribute('href');
+                            if (hash.startsWith('#')) {
+                                e.preventDefault();
+                                const tagElement = document.querySelector(`[data-tag="${hash.substring(2)}"]`);
+                                if (tagElement) {
+                                    tagElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    // Expand the tag section
+                                    const tagButton = tagElement.querySelector('.opblock-tag');
+                                    if (tagButton && !tagButton.classList.contains('is-open')) {
+                                        tagButton.click();
+                                    }
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
