@@ -15,6 +15,7 @@ pub mod cli;
 pub use models::sign_request;
 
 use handlers::{album, artist, auth, chart, geo, library, tag, track, user};
+use serde_json::Value;
 
 #[event(fetch)]
 async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
@@ -25,6 +26,50 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
     router
         // Health check
         .get("/health", |_, _| Response::ok("OK"))
+        // API Documentation endpoints
+        .get("/api/docs", |_, _| {
+            let swagger_ui = include_str!("swagger-ui.html");
+            Response::ok(swagger_ui)
+                .map(|mut resp| {
+                    resp.headers_mut()
+                        .set("Content-Type", "text/html; charset=utf-8")
+                        .unwrap();
+                    resp
+                })
+        })
+        .get("/api/docs/openapi.yaml", |_, _| {
+            let openapi_spec = include_str!("../openapi.yaml");
+            Response::ok(openapi_spec)
+                .map(|mut resp| {
+                    resp.headers_mut()
+                        .set("Content-Type", "application/x-yaml")
+                        .unwrap();
+                    resp
+                })
+        })
+        .get("/api/docs/openapi.json", |_, _| {
+            let openapi_yaml = include_str!("../openapi.yaml");
+            // Convert YAML to JSON
+            match serde_yaml::from_str::<Value>(openapi_yaml) {
+                Ok(yaml_value) => {
+                    match serde_json::to_string_pretty(&yaml_value) {
+                        Ok(json_string) => Response::ok(json_string)
+                            .map(|mut resp| {
+                                resp.headers_mut()
+                                    .set("Content-Type", "application/json")
+                                    .unwrap();
+                                resp
+                            }),
+                        Err(_) => Response::error("Failed to convert to JSON", 500)
+                    }
+                },
+                Err(_) => Response::error("Failed to parse OpenAPI spec", 500)
+            }
+        })
+        // Legacy endpoint for backwards compatibility
+        .get("/openapi", |_, _| {
+            Response::redirect("https://lastfm-proxy-worker.workers.dev/api/docs/openapi.yaml".parse().unwrap())
+        })
         // Artist endpoints
         .get_async("/artist/getCorrection", artist::get_correction)
         .get_async("/artist/getInfo", artist::get_info)

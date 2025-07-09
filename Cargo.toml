@@ -23,6 +23,7 @@ base64 = "0.22"
 futures = "0.3"
 console_error_panic_hook = "0.1"
 md5 = "0.7"
+serde_yaml = "0.9.34"
 
 # CLI-only dependencies (not for WASM)
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
