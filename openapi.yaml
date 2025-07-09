@@ -1,0 +1,3051 @@
+openapi: 3.1.0
+info:
+  title: Last.fm Proxy API
+  version: 1.0.0
+  description: |
+    A high-performance Last.fm API proxy built with Rust and Cloudflare Workers.
+    
+    ## 🚀 Features
+    
+    - **Blazing Fast**: Built with Rust for optimal performance
+    - **Smart Caching**: KV-based response caching with intelligent TTL
+    - **Rate Limiting**: Built-in protection against API abuse  
+    - **CORS Support**: Ready for browser-based applications
+    - **Full Coverage**: Supports 40+ Last.fm API methods
+    
+    ## 🔐 Authentication
+    
+    Most endpoints require only an API key passed as the `api_key` query parameter.
+    Some endpoints (marked with 🔒) require additional authentication via API signature.
+    
+    ## 📊 Response Format
+    
+    All responses are in JSON format. Successful responses include the requested data.
+    Error responses follow this format:
+    
+    ```json
+    {
+      "error": 6,
+      "message": "Invalid parameters"
+    }
+    ```
+    
+    ## ⚡ Rate Limits
+    
+    - 100 requests per minute per IP
+    - Cached responses don't count against rate limits
+    - Check `X-RateLimit-*` headers for current status
+    
+  contact:
+    name: API Support
+    url: https://github.com/marcusziade/lastfm-rs
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://lastfm-proxy-worker.{account}.workers.dev
+    description: Production API
+    variables:
+      account:
+        default: your-account
+        description: Your Cloudflare account subdomain
+
+tags:
+  - name: Artist
+    description: Artist-related endpoints for music artist information
+  - name: Album
+    description: Album information and metadata endpoints
+  - name: Track
+    description: Individual track/song information endpoints
+  - name: Chart
+    description: Music charts and trending data
+  - name: Geo
+    description: Geographic-based music data
+  - name: Tag
+    description: Music genre and tag information
+  - name: User
+    description: User profile and listening history
+  - name: Library
+    description: User's music library data
+  - name: Auth
+    description: Authentication endpoints (🔒 Requires API Secret)
+  - name: System
+    description: System and health check endpoints
+
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health Check
+      description: Check if the API is operational
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+                
+  /openapi:
+    get:
+      tags:
+        - System
+      summary: OpenAPI Specification
+      description: Get the OpenAPI specification for this API
+      operationId: getOpenApiSpec
+      responses:
+        '200':
+          description: OpenAPI specification
+          content:
+            application/yaml:
+              schema:
+                type: string
+
+  # Artist endpoints
+  /artist/getCorrection:
+    get:
+      tags:
+        - Artist
+      summary: Get artist correction
+      description: Get corrected artist name. Use this to fix misspelled artist names.
+      operationId: artistGetCorrection
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: true
+          description: The artist name to correct
+          schema:
+            type: string
+            example: "Radiohea"
+      responses:
+        '200':
+          description: Corrected artist information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistCorrection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/getInfo:
+    get:
+      tags:
+        - Artist
+      summary: Get artist info
+      description: Get detailed information about an artist including biography, stats, and similar artists
+      operationId: artistGetInfo
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the artist
+          schema:
+            type: string
+        - name: lang
+          in: query
+          required: false
+          description: The language to return the biography in (ISO 639 alpha-2 code)
+          schema:
+            type: string
+            default: "en"
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled artist names into correct artist names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - name: username
+          in: query
+          required: false
+          description: Username to fetch info for (adds user-specific data)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Artist information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/getSimilar:
+    get:
+      tags:
+        - Artist
+      summary: Get similar artists
+      description: Get artists similar to a given artist
+      operationId: artistGetSimilar
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the artist
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled artist names into correct artist names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of similar artists to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Similar artists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/getTopAlbums:
+    get:
+      tags:
+        - Artist
+      summary: Get top albums
+      description: Get the top albums for an artist
+      operationId: artistGetTopAlbums
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the artist
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled artist names into correct artist names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top albums
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopAlbums'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/getTopTags:
+    get:
+      tags:
+        - Artist
+      summary: Get top tags
+      description: Get the top tags for an artist
+      operationId: artistGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the artist
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled artist names into correct artist names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+      responses:
+        '200':
+          description: Top tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/getTopTracks:
+    get:
+      tags:
+        - Artist
+      summary: Get top tracks
+      description: Get the top tracks for an artist
+      operationId: artistGetTopTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the artist
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled artist names into correct artist names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tracks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /artist/search:
+    get:
+      tags:
+        - Artist
+      summary: Search for artists
+      description: Search for artists by name
+      operationId: artistSearch
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: true
+          description: The artist name to search for
+          schema:
+            type: string
+            example: "Radio"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtistSearchResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Album endpoints
+  /album/getInfo:
+    get:
+      tags:
+        - Album
+      summary: Get album info
+      description: Get detailed information about an album
+      operationId: albumGetInfo
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: album
+          in: query
+          required: false
+          description: The album name
+          schema:
+            type: string
+            example: "OK Computer"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the album
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled names into correct names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - name: username
+          in: query
+          required: false
+          description: Username to fetch info for (adds user-specific data)
+          schema:
+            type: string
+        - name: lang
+          in: query
+          required: false
+          description: The language to return the info in
+          schema:
+            type: string
+            default: "en"
+      responses:
+        '200':
+          description: Album information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlbumInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /album/getTopTags:
+    get:
+      tags:
+        - Album
+      summary: Get album top tags
+      description: Get the top tags for an album
+      operationId: albumGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: album
+          in: query
+          required: false
+          description: The album name
+          schema:
+            type: string
+            example: "OK Computer"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the album
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled names into correct names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+      responses:
+        '200':
+          description: Top tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /album/search:
+    get:
+      tags:
+        - Album
+      summary: Search for albums
+      description: Search for albums by name
+      operationId: albumSearch
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: album
+          in: query
+          required: true
+          description: The album name to search for
+          schema:
+            type: string
+            example: "OK Computer"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AlbumSearchResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Track endpoints
+  /track/getCorrection:
+    get:
+      tags:
+        - Track
+      summary: Get track correction
+      description: Get corrected track name and artist
+      operationId: trackGetCorrection
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: true
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohea"
+        - name: track
+          in: query
+          required: true
+          description: The track name
+          schema:
+            type: string
+            example: "Crep"
+      responses:
+        '200':
+          description: Corrected track information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackCorrection'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /track/getInfo:
+    get:
+      tags:
+        - Track
+      summary: Get track info
+      description: Get detailed information about a track
+      operationId: trackGetInfo
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: track
+          in: query
+          required: false
+          description: The track name
+          schema:
+            type: string
+            example: "Creep"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the track
+          schema:
+            type: string
+        - name: username
+          in: query
+          required: false
+          description: Username to fetch info for (adds user-specific data)
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled names into correct names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+      responses:
+        '200':
+          description: Track information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /track/getSimilar:
+    get:
+      tags:
+        - Track
+      summary: Get similar tracks
+      description: Get tracks similar to a given track
+      operationId: trackGetSimilar
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: track
+          in: query
+          required: false
+          description: The track name
+          schema:
+            type: string
+            example: "Creep"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the track
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled names into correct names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of similar tracks to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Similar tracks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /track/getTopTags:
+    get:
+      tags:
+        - Track
+      summary: Get track top tags
+      description: Get the top tags for a track
+      operationId: trackGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: artist
+          in: query
+          required: false
+          description: The artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - name: track
+          in: query
+          required: false
+          description: The track name
+          schema:
+            type: string
+            example: "Creep"
+        - name: mbid
+          in: query
+          required: false
+          description: The musicbrainz id for the track
+          schema:
+            type: string
+        - name: autocorrect
+          in: query
+          required: false
+          description: Transform misspelled names into correct names
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 1
+      responses:
+        '200':
+          description: Top tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /track/search:
+    get:
+      tags:
+        - Track
+      summary: Search for tracks
+      description: Search for tracks by name
+      operationId: trackSearch
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: track
+          in: query
+          required: true
+          description: The track name to search for
+          schema:
+            type: string
+            example: "Creep"
+        - name: artist
+          in: query
+          required: false
+          description: Filter by artist name
+          schema:
+            type: string
+            example: "Radiohead"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrackSearchResults'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Chart endpoints
+  /chart/getTopArtists:
+    get:
+      tags:
+        - Chart
+      summary: Get chart top artists
+      description: Get the top artists chart
+      operationId: chartGetTopArtists
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top artists chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChartTopArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /chart/getTopTags:
+    get:
+      tags:
+        - Chart
+      summary: Get chart top tags
+      description: Get the top tags (genres) chart
+      operationId: chartGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tags chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChartTopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /chart/getTopTracks:
+    get:
+      tags:
+        - Chart
+      summary: Get chart top tracks
+      description: Get the top tracks chart
+      operationId: chartGetTopTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tracks chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChartTopTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Geo endpoints
+  /geo/getTopArtists:
+    get:
+      tags:
+        - Geo
+      summary: Get geo top artists
+      description: Get the most popular artists by country
+      operationId: geoGetTopArtists
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: country
+          in: query
+          required: true
+          description: ISO 3166-1 country name
+          schema:
+            type: string
+            example: "United States"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top artists by country
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeoTopArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /geo/getTopTracks:
+    get:
+      tags:
+        - Geo
+      summary: Get geo top tracks
+      description: Get the most popular tracks by country
+      operationId: geoGetTopTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: country
+          in: query
+          required: true
+          description: ISO 3166-1 country name
+          schema:
+            type: string
+            example: "United States"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tracks by country
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeoTopTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Tag endpoints
+  /tag/getInfo:
+    get:
+      tags:
+        - Tag
+      summary: Get tag info
+      description: Get metadata for a tag (genre)
+      operationId: tagGetInfo
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+        - name: lang
+          in: query
+          required: false
+          description: The language to return the wiki in
+          schema:
+            type: string
+            default: "en"
+      responses:
+        '200':
+          description: Tag information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getSimilar:
+    get:
+      tags:
+        - Tag
+      summary: Get similar tags
+      description: Get tags similar to a given tag
+      operationId: tagGetSimilar
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+      responses:
+        '200':
+          description: Similar tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimilarTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getTopAlbums:
+    get:
+      tags:
+        - Tag
+      summary: Get tag top albums
+      description: Get the top albums for a tag
+      operationId: tagGetTopAlbums
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top albums for tag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagTopAlbums'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getTopArtists:
+    get:
+      tags:
+        - Tag
+      summary: Get tag top artists
+      description: Get the top artists for a tag
+      operationId: tagGetTopArtists
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top artists for tag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagTopArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getTopTags:
+    get:
+      tags:
+        - Tag
+      summary: Get top tags
+      description: Get the top global tags
+      operationId: tagGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+      responses:
+        '200':
+          description: Top global tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getTopTracks:
+    get:
+      tags:
+        - Tag
+      summary: Get tag top tracks
+      description: Get the top tracks for a tag
+      operationId: tagGetTopTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tracks for tag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagTopTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /tag/getWeeklyChartList:
+    get:
+      tags:
+        - Tag
+      summary: Get tag weekly chart list
+      description: Get a list of available charts for a tag
+      operationId: tagGetWeeklyChartList
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+      responses:
+        '200':
+          description: Weekly chart list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyChartList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # User endpoints
+  /user/getFriends:
+    get:
+      tags:
+        - User
+      summary: Get user friends
+      description: Get a list of a user's friends
+      operationId: userGetFriends
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: recenttracks
+          in: query
+          required: false
+          description: Include recent tracks for each friend
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: User friends list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFriends'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getInfo:
+    get:
+      tags:
+        - User
+      summary: Get user info
+      description: Get information about a user profile
+      operationId: userGetInfo
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+      responses:
+        '200':
+          description: User profile information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getLovedTracks:
+    get:
+      tags:
+        - User
+      summary: Get user loved tracks
+      description: Get tracks loved by a user
+      operationId: userGetLovedTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Loved tracks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLovedTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getPersonalTags:
+    get:
+      tags:
+        - User
+      summary: Get user personal tags
+      description: Get a user's personal tags
+      operationId: userGetPersonalTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: tag
+          in: query
+          required: true
+          description: The tag name
+          schema:
+            type: string
+            example: "rock"
+        - name: taggingtype
+          in: query
+          required: true
+          description: The type of items to return
+          schema:
+            type: string
+            enum: ["artist", "album", "track"]
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Personal tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserPersonalTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getRecentTracks:
+    get:
+      tags:
+        - User
+      summary: Get user recent tracks
+      description: Get a user's recent listening history
+      operationId: userGetRecentTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: from
+          in: query
+          required: false
+          description: Beginning timestamp of a range (Unix timestamp)
+          schema:
+            type: integer
+        - name: to
+          in: query
+          required: false
+          description: End timestamp of a range (Unix timestamp)
+          schema:
+            type: integer
+        - name: extended
+          in: query
+          required: false
+          description: Include extended data (artist and album info)
+          schema:
+            type: integer
+            enum: [0, 1]
+            default: 0
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Recent tracks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRecentTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getTopAlbums:
+    get:
+      tags:
+        - User
+      summary: Get user top albums
+      description: Get a user's top albums
+      operationId: userGetTopAlbums
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top albums
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTopAlbums'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getTopArtists:
+    get:
+      tags:
+        - User
+      summary: Get user top artists
+      description: Get a user's top artists
+      operationId: userGetTopArtists
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top artists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTopArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getTopTags:
+    get:
+      tags:
+        - User
+      summary: Get user top tags
+      description: Get a user's top tags
+      operationId: userGetTopTags
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of tags to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Top tags
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTopTags'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getTopTracks:
+    get:
+      tags:
+        - User
+      summary: Get user top tracks
+      description: Get a user's top tracks
+      operationId: userGetTopTracks
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - $ref: '#/components/parameters/Period'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Top tracks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTopTracks'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getWeeklyAlbumChart:
+    get:
+      tags:
+        - User
+      summary: Get user weekly album chart
+      description: Get a user's weekly album chart
+      operationId: userGetWeeklyAlbumChart
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: from
+          in: query
+          required: false
+          description: Start timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+        - name: to
+          in: query
+          required: false
+          description: End timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Weekly album chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeeklyAlbumChart'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getWeeklyArtistChart:
+    get:
+      tags:
+        - User
+      summary: Get user weekly artist chart
+      description: Get a user's weekly artist chart
+      operationId: userGetWeeklyArtistChart
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: from
+          in: query
+          required: false
+          description: Start timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+        - name: to
+          in: query
+          required: false
+          description: End timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Weekly artist chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeeklyArtistChart'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getWeeklyChartList:
+    get:
+      tags:
+        - User
+      summary: Get user weekly chart list
+      description: Get a list of available charts for a user
+      operationId: userGetWeeklyChartList
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+      responses:
+        '200':
+          description: Weekly chart list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyChartList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /user/getWeeklyTrackChart:
+    get:
+      tags:
+        - User
+      summary: Get user weekly track chart
+      description: Get a user's weekly track chart
+      operationId: userGetWeeklyTrackChart
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - name: from
+          in: query
+          required: false
+          description: Start timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+        - name: to
+          in: query
+          required: false
+          description: End timestamp of the chart week (Unix timestamp)
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Weekly track chart
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWeeklyTrackChart'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Library endpoints
+  /library/getArtists:
+    get:
+      tags:
+        - Library
+      summary: Get library artists
+      description: Get artists from a user's library
+      operationId: libraryGetArtists
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: user
+          in: query
+          required: true
+          description: The user name
+          schema:
+            type: string
+            example: "rj"
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Library artists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LibraryArtists'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Auth endpoints
+  /auth/getSession:
+    get:
+      tags:
+        - Auth
+      summary: Get session 🔒
+      description: |
+        Convert an authentication token into a session key.
+        **Requires API Secret** - This endpoint requires request signing.
+      operationId: authGetSession
+      security:
+        - ApiKeyAuth: []
+        - ApiSignature: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: token
+          in: query
+          required: true
+          description: The authentication token from auth URL callback
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /auth/getMobileSession:
+    get:
+      tags:
+        - Auth
+      summary: Get mobile session 🔒
+      description: |
+        Create a session for mobile apps.
+        **Requires API Secret** - This endpoint requires request signing.
+      operationId: authGetMobileSession
+      security:
+        - ApiKeyAuth: []
+        - ApiSignature: []
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: username
+          in: query
+          required: true
+          description: The Last.fm username
+          schema:
+            type: string
+        - name: password
+          in: query
+          required: true
+          description: The Last.fm password
+          schema:
+            type: string
+            format: password
+      responses:
+        '200':
+          description: Session information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /auth/url:
+    get:
+      tags:
+        - Auth
+      summary: Get auth URL
+      description: Get the URL to redirect users for authentication
+      operationId: authGetUrl
+      parameters:
+        - $ref: '#/components/parameters/ApiKey'
+        - name: callback_url
+          in: query
+          required: false
+          description: The URL to redirect back to after auth (defaults to worker URL)
+          schema:
+            type: string
+            format: uri
+      responses:
+        '200':
+          description: Authentication URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  auth_url:
+                    type: string
+                    format: uri
+                    description: The URL to redirect users to for authentication
+                    example: "https://www.last.fm/api/auth/?api_key=xxx&cb=https://example.com/callback"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: query
+      name: api_key
+      description: Your Last.fm API key
+    
+    ApiSignature:
+      type: apiKey
+      in: query
+      name: api_sig
+      description: MD5 signature for authenticated requests
+
+  parameters:
+    ApiKey:
+      name: api_key
+      in: query
+      required: true
+      description: Your Last.fm API key
+      schema:
+        type: string
+        example: "your_api_key_here"
+    
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Page number for paginated results
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Number of results per page (max varies by endpoint)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    
+    Period:
+      name: period
+      in: query
+      required: false
+      description: Time period for charts
+      schema:
+        type: string
+        enum: ["overall", "7day", "1month", "3month", "6month", "12month"]
+        default: "overall"
+
+  responses:
+    BadRequest:
+      description: Bad request - Invalid parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 6
+            message: "Invalid parameters - Your request is missing a required parameter"
+    
+    Forbidden:
+      description: Forbidden - Invalid API key or rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalidKey:
+              summary: Invalid API key
+              value:
+                error: 10
+                message: "Invalid API key - You must be granted a valid key"
+            rateLimit:
+              summary: Rate limit exceeded
+              value:
+                error: 29
+                message: "Rate limit exceeded"
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per minute
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when rate limit resets
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: integer
+          description: Error code
+        message:
+          type: string
+          description: Error message
+    
+    Image:
+      type: object
+      properties:
+        '#text':
+          type: string
+          format: uri
+          description: Image URL
+        size:
+          type: string
+          enum: ["small", "medium", "large", "extralarge", "mega"]
+    
+    Tag:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Tag name
+        url:
+          type: string
+          format: uri
+          description: Last.fm URL for the tag
+        count:
+          type: integer
+          description: Tag weight/count
+    
+    Artist:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Artist name
+        mbid:
+          type: string
+          description: MusicBrainz ID
+        url:
+          type: string
+          format: uri
+          description: Last.fm URL
+        image:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        listeners:
+          type: string
+          description: Number of listeners
+        playcount:
+          type: string
+          description: Total play count
+    
+    Album:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Album name
+        artist:
+          type: string
+          description: Artist name
+        mbid:
+          type: string
+          description: MusicBrainz ID
+        url:
+          type: string
+          format: uri
+          description: Last.fm URL
+        image:
+          type: array
+          items:
+            $ref: '#/components/schemas/Image'
+        listeners:
+          type: string
+          description: Number of listeners
+        playcount:
+          type: string
+          description: Total play count
+    
+    Track:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Track name
+        artist:
+          type: object
+          properties:
+            name:
+              type: string
+            mbid:
+              type: string
+            url:
+              type: string
+              format: uri
+        album:
+          type: object
+          properties:
+            name:
+              type: string
+            mbid:
+              type: string
+            url:
+              type: string
+              format: uri
+        mbid:
+          type: string
+          description: MusicBrainz ID
+        url:
+          type: string
+          format: uri
+          description: Last.fm URL
+        duration:
+          type: string
+          description: Track duration in milliseconds
+        listeners:
+          type: string
+          description: Number of listeners
+        playcount:
+          type: string
+          description: Total play count
+    
+    ArtistCorrection:
+      type: object
+      properties:
+        corrections:
+          type: object
+          properties:
+            correction:
+              type: object
+              properties:
+                artist:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Corrected artist name
+                    mbid:
+                      type: string
+                      description: MusicBrainz ID
+                    url:
+                      type: string
+                      format: uri
+    
+    ArtistInfo:
+      type: object
+      properties:
+        artist:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Artist'
+            - type: object
+              properties:
+                bio:
+                  type: object
+                  properties:
+                    published:
+                      type: string
+                      description: Publication date
+                    summary:
+                      type: string
+                      description: Short biography
+                    content:
+                      type: string
+                      description: Full biography
+                stats:
+                  type: object
+                  properties:
+                    listeners:
+                      type: string
+                    playcount:
+                      type: string
+                    userplaycount:
+                      type: string
+                      description: User's play count (if username provided)
+                similar:
+                  type: object
+                  properties:
+                    artist:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Artist'
+                tags:
+                  type: object
+                  properties:
+                    tag:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Tag'
+    
+    SimilarArtists:
+      type: object
+      properties:
+        similarartists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Artist'
+                  - type: object
+                    properties:
+                      match:
+                        type: string
+                        description: Similarity score (0-1)
+            '@attr':
+              type: object
+              properties:
+                artist:
+                  type: string
+    
+    TopAlbums:
+      type: object
+      properties:
+        topalbums:
+          type: object
+          properties:
+            album:
+              type: array
+              items:
+                $ref: '#/components/schemas/Album'
+            '@attr':
+              type: object
+              properties:
+                artist:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    TopTags:
+      type: object
+      properties:
+        toptags:
+          type: object
+          properties:
+            tag:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tag'
+            '@attr':
+              type: object
+              properties:
+                artist:
+                  type: string
+    
+    TopTracks:
+      type: object
+      properties:
+        toptracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                artist:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    ArtistSearchResults:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            opensearch:Query:
+              type: object
+            opensearch:totalResults:
+              type: string
+            opensearch:startIndex:
+              type: string
+            opensearch:itemsPerPage:
+              type: string
+            artistmatches:
+              type: object
+              properties:
+                artist:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Artist'
+            '@attr':
+              type: object
+    
+    AlbumInfo:
+      type: object
+      properties:
+        album:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Album'
+            - type: object
+              properties:
+                tracks:
+                  type: object
+                  properties:
+                    track:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          url:
+                            type: string
+                            format: uri
+                          duration:
+                            type: string
+                          '@attr':
+                            type: object
+                            properties:
+                              rank:
+                                type: string
+                tags:
+                  type: object
+                  properties:
+                    tag:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Tag'
+                wiki:
+                  type: object
+                  properties:
+                    published:
+                      type: string
+                    summary:
+                      type: string
+                    content:
+                      type: string
+    
+    AlbumSearchResults:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            opensearch:Query:
+              type: object
+            opensearch:totalResults:
+              type: string
+            opensearch:startIndex:
+              type: string
+            opensearch:itemsPerPage:
+              type: string
+            albummatches:
+              type: object
+              properties:
+                album:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Album'
+            '@attr':
+              type: object
+    
+    TrackCorrection:
+      type: object
+      properties:
+        corrections:
+          type: object
+          properties:
+            correction:
+              type: object
+              properties:
+                track:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Corrected track name
+                    artist:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Corrected artist name
+                        mbid:
+                          type: string
+                        url:
+                          type: string
+                          format: uri
+                    url:
+                      type: string
+                      format: uri
+    
+    TrackInfo:
+      type: object
+      properties:
+        track:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/Track'
+            - type: object
+              properties:
+                wiki:
+                  type: object
+                  properties:
+                    published:
+                      type: string
+                    summary:
+                      type: string
+                    content:
+                      type: string
+                toptags:
+                  type: object
+                  properties:
+                    tag:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Tag'
+                userplaycount:
+                  type: string
+                  description: User's play count (if username provided)
+                userloved:
+                  type: string
+                  description: Whether user loved this track (0 or 1)
+    
+    SimilarTracks:
+      type: object
+      properties:
+        similartracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Track'
+                  - type: object
+                    properties:
+                      match:
+                        type: string
+                        description: Similarity score (0-1)
+            '@attr':
+              type: object
+    
+    TrackSearchResults:
+      type: object
+      properties:
+        results:
+          type: object
+          properties:
+            opensearch:Query:
+              type: object
+            opensearch:totalResults:
+              type: string
+            opensearch:startIndex:
+              type: string
+            opensearch:itemsPerPage:
+              type: string
+            trackmatches:
+              type: object
+              properties:
+                track:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+    
+    ChartTopArtists:
+      type: object
+      properties:
+        artists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                $ref: '#/components/schemas/Artist'
+            '@attr':
+              type: object
+              properties:
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    ChartTopTags:
+      type: object
+      properties:
+        tags:
+          type: object
+          properties:
+            tag:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Tag'
+                  - type: object
+                    properties:
+                      reach:
+                        type: string
+                      taggings:
+                        type: string
+            '@attr':
+              type: object
+              properties:
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    ChartTopTracks:
+      type: object
+      properties:
+        tracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    GeoTopArtists:
+      type: object
+      properties:
+        topartists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                $ref: '#/components/schemas/Artist'
+            '@attr':
+              type: object
+              properties:
+                country:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    GeoTopTracks:
+      type: object
+      properties:
+        tracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                country:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    TagInfo:
+      type: object
+      properties:
+        tag:
+          type: object
+          properties:
+            name:
+              type: string
+            total:
+              type: integer
+              description: Total usage count
+            reach:
+              type: integer
+              description: Number of users
+            wiki:
+              type: object
+              properties:
+                summary:
+                  type: string
+                content:
+                  type: string
+    
+    SimilarTags:
+      type: object
+      properties:
+        similartags:
+          type: object
+          properties:
+            tag:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tag'
+            '@attr':
+              type: object
+              properties:
+                tag:
+                  type: string
+    
+    TagTopAlbums:
+      type: object
+      properties:
+        albums:
+          type: object
+          properties:
+            album:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Album'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                tag:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    TagTopArtists:
+      type: object
+      properties:
+        topartists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Artist'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                tag:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    TagTopTracks:
+      type: object
+      properties:
+        tracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Track'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                tag:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    WeeklyChartList:
+      type: object
+      properties:
+        weeklychartlist:
+          type: object
+          properties:
+            chart:
+              type: array
+              items:
+                type: object
+                properties:
+                  '#text':
+                    type: string
+                  from:
+                    type: string
+                    description: Unix timestamp
+                  to:
+                    type: string
+                    description: Unix timestamp
+            '@attr':
+              type: object
+    
+    UserFriends:
+      type: object
+      properties:
+        friends:
+          type: object
+          properties:
+            user:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  realname:
+                    type: string
+                  image:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Image'
+                  url:
+                    type: string
+                    format: uri
+                  country:
+                    type: string
+                  age:
+                    type: string
+                  gender:
+                    type: string
+                  subscriber:
+                    type: string
+                  playcount:
+                    type: string
+                  playlists:
+                    type: string
+                  bootstrap:
+                    type: string
+                  registered:
+                    type: object
+                    properties:
+                      '#text':
+                        type: string
+                      unixtime:
+                        type: string
+                  recenttrack:
+                    $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserInfo:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            name:
+              type: string
+            realname:
+              type: string
+            image:
+              type: array
+              items:
+                $ref: '#/components/schemas/Image'
+            url:
+              type: string
+              format: uri
+            country:
+              type: string
+            age:
+              type: string
+            gender:
+              type: string
+            subscriber:
+              type: string
+            playcount:
+              type: string
+            playlists:
+              type: string
+            bootstrap:
+              type: string
+            registered:
+              type: object
+              properties:
+                '#text':
+                  type: string
+                unixtime:
+                  type: string
+    
+    UserLovedTracks:
+      type: object
+      properties:
+        lovedtracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserPersonalTags:
+      type: object
+      properties:
+        taggings:
+          type: object
+          properties:
+            artists:
+              type: object
+              properties:
+                artist:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Artist'
+            albums:
+              type: object
+              properties:
+                album:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Album'
+            tracks:
+              type: object
+              properties:
+                track:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Track'
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                tag:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserRecentTracks:
+      type: object
+      properties:
+        recenttracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Track'
+                  - type: object
+                    properties:
+                      date:
+                        type: object
+                        properties:
+                          uts:
+                            type: string
+                            description: Unix timestamp
+                          '#text':
+                            type: string
+                      '@attr':
+                        type: object
+                        properties:
+                          nowplaying:
+                            type: string
+                            description: "true" if currently playing
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserTopAlbums:
+      type: object
+      properties:
+        topalbums:
+          type: object
+          properties:
+            album:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Album'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                period:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserTopArtists:
+      type: object
+      properties:
+        topartists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Artist'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                period:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserTopTags:
+      type: object
+      properties:
+        toptags:
+          type: object
+          properties:
+            tag:
+              type: array
+              items:
+                $ref: '#/components/schemas/Tag'
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+    
+    UserTopTracks:
+      type: object
+      properties:
+        toptracks:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Track'
+                  - type: object
+                    properties:
+                      '@attr':
+                        type: object
+                        properties:
+                          rank:
+                            type: string
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                period:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    UserWeeklyAlbumChart:
+      type: object
+      properties:
+        weeklyalbumchart:
+          type: object
+          properties:
+            album:
+              type: array
+              items:
+                type: object
+                properties:
+                  artist:
+                    type: object
+                    properties:
+                      mbid:
+                        type: string
+                      '#text':
+                        type: string
+                  name:
+                    type: string
+                  mbid:
+                    type: string
+                  playcount:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                from:
+                  type: string
+                to:
+                  type: string
+    
+    UserWeeklyArtistChart:
+      type: object
+      properties:
+        weeklyartistchart:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  mbid:
+                    type: string
+                  playcount:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                from:
+                  type: string
+                to:
+                  type: string
+    
+    UserWeeklyTrackChart:
+      type: object
+      properties:
+        weeklytrackchart:
+          type: object
+          properties:
+            track:
+              type: array
+              items:
+                type: object
+                properties:
+                  artist:
+                    type: object
+                    properties:
+                      mbid:
+                        type: string
+                      '#text':
+                        type: string
+                  name:
+                    type: string
+                  mbid:
+                    type: string
+                  playcount:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                from:
+                  type: string
+                to:
+                  type: string
+    
+    LibraryArtists:
+      type: object
+      properties:
+        artists:
+          type: object
+          properties:
+            artist:
+              type: array
+              items:
+                allOf:
+                  - $ref: '#/components/schemas/Artist'
+                  - type: object
+                    properties:
+                      tagcount:
+                        type: string
+            '@attr':
+              type: object
+              properties:
+                user:
+                  type: string
+                page:
+                  type: string
+                perPage:
+                  type: string
+                totalPages:
+                  type: string
+                total:
+                  type: string
+    
+    Session:
+      type: object
+      properties:
+        session:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Username
+            key:
+              type: string
+              description: Session key for authenticated requests
+            subscriber:
+              type: integer
+              description: Whether user is a subscriber (0 or 1)
