@@ -6,15 +6,88 @@
     <title>Last.fm Proxy API Documentation</title>
     <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.11.0/swagger-ui.css">
     <style>
+        /* CSS Variables for theming */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #fafafa;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #e0e0e0;
+            --header-bg: linear-gradient(135deg, #d51007 0%, #ff1a1a 100%);
+            --nav-bg: #f8f8f8;
+            --nav-border: #e0e0e0;
+            --nav-text: #333333;
+            --link-color: #d51007;
+            --code-bg: #f5f5f5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Dark mode */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #1a1a1a;
+                --bg-secondary: #242424;
+                --bg-tertiary: #2a2a2a;
+                --text-primary: #e0e0e0;
+                --text-secondary: #b0b0b0;
+                --text-tertiary: #808080;
+                --border-color: #333333;
+                --nav-bg: #242424;
+                --nav-border: #333333;
+                --nav-text: #e0e0e0;
+                --link-color: #ff4444;
+                --code-bg: #2a2a2a;
+                --shadow-color: rgba(0, 0, 0, 0.3);
+            }
+        }
+        
+        /* Manual theme toggle */
+        body.light-theme {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #fafafa;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #e0e0e0;
+            --nav-bg: #f8f8f8;
+            --nav-border: #e0e0e0;
+            --nav-text: #333333;
+            --link-color: #d51007;
+            --code-bg: #f5f5f5;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.dark-theme {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #242424;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-color: #333333;
+            --nav-bg: #242424;
+            --nav-border: #333333;
+            --nav-text: #e0e0e0;
+            --link-color: #ff4444;
+            --code-bg: #2a2a2a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+        
         body {
             margin: 0;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue", Arial, sans-serif;
-            background-color: #0a0a0a;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
         }
         
         /* Custom Last.fm theme */
         .swagger-ui {
-            background-color: #0a0a0a;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
         }
         
         .swagger-ui .topbar {
@@ -23,7 +96,7 @@
         
         /* Custom header */
         .custom-header {
-            background: linear-gradient(135deg, #d51007 0%, #ff1a1a 100%);
+            background: var(--header-bg);
             color: white;
             padding: 2rem 0;
             text-align: center;
@@ -52,14 +125,14 @@
         
         /* Navigation bar */
         .nav-bar {
-            background: #1a1a1a;
+            background: var(--nav-bg);
             padding: 1rem;
             text-align: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--nav-border);
         }
         
         .nav-bar a {
-            color: #fff;
+            color: var(--nav-text);
             text-decoration: none;
             margin: 0 1rem;
             font-weight: 500;
@@ -67,7 +140,37 @@
         }
         
         .nav-bar a:hover {
-            color: #d51007;
+            color: var(--link-color);
+        }
+        
+        /* Theme toggle button */
+        .theme-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+            transform: scale(1.1);
+        }
+        
+        .theme-toggle svg {
+            width: 24px;
+            height: 24px;
+            fill: var(--text-primary);
         }
         
         /* Swagger UI customizations */
@@ -76,16 +179,48 @@
         }
         
         .swagger-ui .info .title {
-            color: #fff;
+            color: var(--text-primary);
         }
         
         .swagger-ui .info .description {
-            color: #ccc;
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .info .description h1,
+        .swagger-ui .info .description h2,
+        .swagger-ui .info .description h3,
+        .swagger-ui .info .description h4 {
+            color: var(--text-primary);
+        }
+        
+        .swagger-ui .info .description p,
+        .swagger-ui .info .description li {
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .info .description code {
+            background: var(--code-bg);
+            color: var(--link-color);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .swagger-ui .info .description pre {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        .swagger-ui .info .description pre code {
+            background: transparent;
+            border: none;
+            padding: 0;
         }
         
         .swagger-ui .scheme-container {
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
         }
         
         .swagger-ui .btn.authorize {
@@ -111,8 +246,8 @@
         }
         
         .swagger-ui .opblock-tag {
-            color: #fff;
-            border-bottom-color: #333;
+            color: var(--text-primary);
+            border-bottom-color: var(--border-color);
         }
         
         .swagger-ui .opblock-tag:hover {
@@ -120,85 +255,85 @@
         }
         
         .swagger-ui .parameter__name {
-            color: #fff;
+            color: var(--text-primary);
         }
         
         .swagger-ui .parameter__type {
-            color: #d51007;
+            color: var(--link-color);
         }
         
         .swagger-ui table thead tr th {
-            color: #fff;
-            border-color: #333;
+            color: var(--text-primary);
+            border-color: var(--border-color);
         }
         
         .swagger-ui .response-col_status {
-            color: #fff;
+            color: var(--text-primary);
         }
         
         .swagger-ui .response-col_description {
-            color: #ccc;
+            color: var(--text-secondary);
         }
         
         .swagger-ui .model-title {
-            color: #fff;
+            color: var(--text-primary);
         }
         
         .swagger-ui .model {
-            color: #ccc;
+            color: var(--text-secondary);
         }
         
         .swagger-ui .prop-type {
-            color: #d51007;
+            color: var(--link-color);
         }
         
         .swagger-ui select,
         .swagger-ui input[type=text],
         .swagger-ui textarea {
-            background: #1a1a1a;
-            color: #fff;
-            border-color: #333;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
         }
         
         .swagger-ui select:focus,
         .swagger-ui input[type=text]:focus,
         .swagger-ui textarea:focus {
-            border-color: #d51007;
+            border-color: var(--link-color);
             outline: none;
         }
         
         .swagger-ui .body-param__example {
-            background: #0a0a0a;
-            border-color: #333;
+            background: var(--code-bg);
+            border-color: var(--border-color);
         }
         
         .swagger-ui .highlight-code {
-            background: #0a0a0a;
+            background: var(--code-bg);
         }
         
         .swagger-ui .markdown p,
         .swagger-ui .markdown ul {
-            color: #ccc;
+            color: var(--text-secondary);
         }
         
         .swagger-ui .markdown code {
-            background: #1a1a1a;
-            color: #ff1a1a;
-            border-color: #333;
+            background: var(--code-bg);
+            color: var(--link-color);
+            border-color: var(--border-color);
             padding: 2px 6px;
             border-radius: 3px;
         }
         
         /* Quick links */
         .quick-links {
-            background: #1a1a1a;
+            background: var(--bg-secondary);
             padding: 2rem;
             text-align: center;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid var(--border-color);
         }
         
         .quick-links h3 {
-            color: #fff;
+            color: var(--text-primary);
             margin: 0 0 1rem 0;
         }
         
@@ -210,28 +345,28 @@
         }
         
         .quick-links a {
-            color: #d51007;
+            color: var(--link-color);
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
         }
         
         .quick-links a:hover {
-            color: #ff1a1a;
+            opacity: 0.8;
             text-decoration: underline;
         }
         
         /* Footer */
         .footer {
-            background: #0a0a0a;
-            color: #666;
+            background: var(--bg-primary);
+            color: var(--text-tertiary);
             text-align: center;
             padding: 2rem;
-            border-top: 1px solid #333;
+            border-top: 1px solid var(--border-color);
         }
         
         .footer a {
-            color: #d51007;
+            color: var(--link-color);
             text-decoration: none;
         }
         
@@ -239,23 +374,23 @@
             text-decoration: underline;
         }
         
-        /* Dark theme for responses */
+        /* Swagger UI responses */
         .swagger-ui .responses-inner {
-            background: #0a0a0a;
+            background: var(--bg-primary);
         }
         
         .swagger-ui .response {
-            background: #1a1a1a;
-            border-color: #333;
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
         }
         
         .swagger-ui .opblock-body {
-            background: #0a0a0a;
+            background: var(--bg-primary);
         }
         
         .swagger-ui .opblock .opblock-section-header {
-            background: #1a1a1a;
-            border-color: #333;
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
         }
         
         .swagger-ui .btn {
@@ -278,27 +413,35 @@
         
         /* Hide default Try it out button styling */
         .swagger-ui .btn.try-out__btn {
-            background: #333;
-            border-color: #333;
+            background: var(--bg-tertiary);
+            border-color: var(--border-color);
         }
         
         .swagger-ui .btn.try-out__btn:hover {
-            background: #444;
-            border-color: #444;
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
         }
         
         /* Rate limit notice */
         .rate-limit-notice {
-            background: #1a1a1a;
-            border-left: 4px solid #d51007;
+            background: var(--bg-secondary);
+            border-left: 4px solid var(--link-color);
             padding: 1rem;
             margin: 2rem auto;
             max-width: 800px;
-            color: #ccc;
+            color: var(--text-secondary);
         }
         
         .rate-limit-notice strong {
-            color: #fff;
+            color: var(--text-primary);
+        }
+        
+        .rate-limit-notice code {
+            background: var(--code-bg);
+            color: var(--link-color);
+            padding: 2px 6px;
+            border-radius: 3px;
+            border: 1px solid var(--border-color);
         }
         
         /* Scrollbar styling */
@@ -307,20 +450,80 @@
         }
         
         ::-webkit-scrollbar-track {
-            background: #0a0a0a;
+            background: var(--bg-primary);
         }
         
         ::-webkit-scrollbar-thumb {
-            background: #333;
+            background: var(--border-color);
             border-radius: 6px;
         }
         
         ::-webkit-scrollbar-thumb:hover {
-            background: #444;
+            background: var(--text-tertiary);
+        }
+        
+        /* Additional Swagger UI overrides for better readability */
+        .swagger-ui .opblock-description-wrapper p,
+        .swagger-ui .opblock-external-docs-wrapper p {
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .opblock .opblock-section-header h4 {
+            color: var(--text-primary);
+        }
+        
+        .swagger-ui .opblock-tag-section h3 {
+            color: var(--text-primary);
+        }
+        
+        .swagger-ui .parameter__name.required::after {
+            color: var(--link-color);
+        }
+        
+        .swagger-ui .parameters-col_description p {
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .parameter__in {
+            color: var(--text-tertiary);
+        }
+        
+        .swagger-ui .responses-wrapper .opblock-section-header h4 {
+            color: var(--text-primary);
+        }
+        
+        .swagger-ui .response-col_links {
+            color: var(--link-color);
+        }
+        
+        .swagger-ui .opblock-summary-description {
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .opblock.is-open .opblock-summary-description {
+            color: var(--text-secondary);
+        }
+        
+        .swagger-ui .opblock-summary-path {
+            color: var(--text-primary);
+        }
+        
+        .swagger-ui .opblock-summary-path__deprecated {
+            color: var(--text-tertiary);
         }
     </style>
 </head>
 <body>
+    <!-- Theme toggle button -->
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <svg class="sun-icon" viewBox="0 0 24 24" style="display: none;">
+            <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <svg class="moon-icon" viewBox="0 0 24 24">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+    </button>
+    
     <div class="custom-header">
         <h1>
             <span class="logo-icon">🎵</span>
@@ -410,6 +613,60 @@
                 }
             });
         }
+        
+        // Theme handling
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        const currentTheme = localStorage.getItem('theme');
+        
+        // Set initial theme
+        if (currentTheme) {
+            document.body.className = currentTheme + '-theme';
+            updateThemeIcon(currentTheme === 'dark');
+        } else if (prefersDark.matches) {
+            document.body.className = 'dark-theme';
+            updateThemeIcon(true);
+        } else {
+            document.body.className = 'light-theme';
+            updateThemeIcon(false);
+        }
+        
+        function toggleTheme() {
+            const isDark = document.body.classList.contains('dark-theme');
+            if (isDark) {
+                document.body.className = 'light-theme';
+                localStorage.setItem('theme', 'light');
+                updateThemeIcon(false);
+            } else {
+                document.body.className = 'dark-theme';
+                localStorage.setItem('theme', 'dark');
+                updateThemeIcon(true);
+            }
+        }
+        
+        function updateThemeIcon(isDark) {
+            const sunIcon = document.querySelector('.sun-icon');
+            const moonIcon = document.querySelector('.moon-icon');
+            if (isDark) {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+        
+        // Listen for system theme changes
+        prefersDark.addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                if (e.matches) {
+                    document.body.className = 'dark-theme';
+                    updateThemeIcon(true);
+                } else {
+                    document.body.className = 'light-theme';
+                    updateThemeIcon(false);
+                }
+            }
+        });
     </script>
 </body>
 </html>
