@@ -29,6 +29,7 @@
                     <a href="#features">Features</a>
                     <a href="#quickstart">Quick Start</a>
                     <a href="#examples">Examples</a>
+                    <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs" target="_blank">API Docs</a>
                     <a href="https://github.com/marcusziade/lastfm-rs" class="github-link">
                         <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
                             <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
@@ -54,6 +55,16 @@
                 </p>
                 <div class="hero-actions">
                     <a href="#quickstart" class="btn btn-primary">Get Started</a>
+                    <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs" class="btn btn-secondary" target="_blank">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px; vertical-align: middle;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 8 9 8 9"></polyline>
+                        </svg>
+                        API Documentation
+                    </a>
                     <a href="https://github.com/marcusziade/lastfm-rs" class="btn btn-secondary">View on GitHub</a>
                 </div>
                 <div class="hero-stats">
@@ -107,6 +118,11 @@
                     <div class="feature-icon">🎨</div>
                     <h3>Rich CLI</h3>
                     <p>Beautiful command-line interface with colored output and interactive authentication</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📖</div>
+                    <h3>Interactive API Docs</h3>
+                    <p>Beautiful Swagger UI with live API testing, OpenAPI 3.0 spec, and comprehensive examples</p>
                 </div>
             </div>
         </div>
@@ -404,6 +420,50 @@ groups, they were distinguished for their extended compositions...
         </div>
     </section>
 
+    <section class="api-section">
+        <div class="container">
+            <div class="api-content">
+                <h2 class="section-title">🚀 Backend API</h2>
+                <p class="section-subtitle">
+                    Powerful REST API with 40+ endpoints for accessing Last.fm data
+                </p>
+                <div class="api-features">
+                    <div class="api-feature">
+                        <span class="api-icon">📖</span>
+                        <h4>Interactive Documentation</h4>
+                        <p>Explore and test API endpoints with our beautiful Swagger UI</p>
+                    </div>
+                    <div class="api-feature">
+                        <span class="api-icon">🔑</span>
+                        <h4>Simple Authentication</h4>
+                        <p>Just pass your API key as a query parameter</p>
+                    </div>
+                    <div class="api-feature">
+                        <span class="api-icon">⚡</span>
+                        <h4>Edge Performance</h4>
+                        <p>Deployed globally on Cloudflare's network for low latency</p>
+                    </div>
+                </div>
+                <div class="api-cta">
+                    <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs" class="btn btn-primary btn-large" target="_blank">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 10px; vertical-align: middle;">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                        </svg>
+                        Explore API Documentation
+                    </a>
+                    <p class="api-note">
+                        Available formats: 
+                        <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs/openapi.json" target="_blank">JSON</a> • 
+                        <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs/openapi.yaml" target="_blank">YAML</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="cta">
         <div class="container">
             <div class="cta-content">
@@ -428,6 +488,7 @@ groups, they were distinguished for their extended compositions...
                     </p>
                 </div>
                 <div class="footer-right">
+                    <a href="https://lastfm-proxy-worker.your-account.workers.dev/api/docs" target="_blank">API Documentation</a>
                     <a href="https://github.com/marcusziade/lastfm-rs/blob/master/docs/CLI_USER_MANUAL.md">User Manual</a>
                     <a href="https://github.com/marcusziade/lastfm-rs/blob/master/docs/CLI_SHOWCASE.md">Command Showcase</a>
                     <a href="https://github.com/marcusziade/lastfm-rs/issues">Issues</a>
