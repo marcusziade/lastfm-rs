@@ -38,7 +38,7 @@ info:
     
   contact:
     name: API Support
-    url: https://github.com/marcusziade/lastfm-rs
+    url: https://github.com/guitaripod/lastfm-rs
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
